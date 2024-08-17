@@ -16,6 +16,7 @@ class NewsDataExtractor:
             search_parameters = {'text_phrase': "Olympic Paris", 'news_category': str, 'max_months': int}
         self.search_parameters = search_parameters
         self.source_parameters = {}
+        self.ignore_urls_with_text = ['/staff/']
 
     def _get_sources(self, only_active=False):
         sources_config = {
@@ -24,9 +25,12 @@ class NewsDataExtractor:
                        'listing_steps': [{'type': 'div', 'loc': {'class': 'PageList-items-item'}}],
                        'extraction_steps': [
                            {'column_name': 'title', 'type': 'h1', 'loc': {'class': 'Page-headline'}},
-                           {'column_name': 'description', 'type': 'div', 'loc': {'class': 'RichTextStoryBody RichTextBody'}},
-                           {'column_name': 'date', 'type': 'div', 'loc': {'class': 'Page-dateModified'}},
-                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'Image','alt':'Image'}},
+                           {'column_name': 'description', 'type': 'div',
+                            'loc': {'class': 'RichTextStoryBody RichTextBody'}},
+                           {'column_name': 'full_text', 'type': 'div',
+                            'loc': {'class': 'RichTextStoryBody RichTextBody'}},
+                           {'column_name': 'date', 'type': 'bsp-timestamp', 'loc': {}},
+                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'Image', 'alt': 'Image'}},
                            {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'Figure-caption'}},
                            {'column_name': 'authors', 'type': 'div', 'loc': {'class': 'Page-authors'}},
 
@@ -48,27 +52,37 @@ class NewsDataExtractor:
             'gothamist': {'text_search_url': 'https://gothamist.com/search?q=', 'domain': 'https://gothamist.com',
                           'enabled': True, 'captcha': False,
                           'listing_steps': [
-                              {'type': 'div', 'loc': {'class': 'v-card gothamist-card mod-horizontal'}}], 'extraction_steps': [
-                           {'column_name': 'title', 'type': 'h1', 'loc': {'class': 'mt-4 mb-3 h2'}},
-                           {'column_name': 'description', 'type': 'div', 'loc': {'class': 'streamfield-paragraph rte-text'}},
-                           {'column_name': 'date', 'type': 'div', 'loc': {'class': 'date-published'}},
-                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'image native-image prime-img-class'}},
-                           {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'flexible-link null image-with-caption-credit-link image-with-caption-credit-link'}},
-                           {'column_name': 'authors', 'type': 'a', 'loc': {'class': 'flexible-link internal v-byline-author-name v-byline-author-name'}},
+                              {'type': 'div', 'loc': {'class': 'v-card gothamist-card mod-horizontal'}}],
+                          'extraction_steps': [
+                              {'column_name': 'title', 'type': 'h1', 'loc': {'class': 'mt-4 mb-3 h2'}},
+                              {'column_name': 'description', 'type': 'div',
+                               'loc': {'class': 'streamfield-paragraph rte-text'}},
+                              {'column_name': 'full_text', 'type': 'div',
+                               'loc': {'class': 'streamfield-paragraph rte-text'}},
+                              {'column_name': 'date', 'type': 'div', 'loc': {'class': 'date-published'}},
+                              {'column_name': 'picture_url', 'type': 'img',
+                               'loc': {'class': 'image native-image prime-img-class'}},
+                              {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {
+                                  'class': 'flexible-link null image-with-caption-credit-link image-with-caption-credit-link'}},
+                              {'column_name': 'authors', 'type': 'a',
+                               'loc': {'class': 'flexible-link internal v-byline-author-name v-byline-author-name'}},
 
-                       ],
+                          ],
                           },
 
             'yahoo': {'text_search_url': 'https://news.search.yahoo.com/search;?p=',
                       'domain': 'https://news.search.yahoo.com', 'enabled': True, 'captcha': False,
                       'listing_steps': [{'type': 'div', 'loc': {'class': 'dd NewsArticle'}}],
                       'extraction_steps': [
-                          {'column_name': 'title', 'type': 'h1', 'loc': {'id': 'caas-lead-header-undefined'}},
+                          {'column_name': 'title', 'type': 'div', 'loc': {'class': 'caas-title-wrapper'}},
                           {'column_name': 'description', 'type': 'div',
                            'loc': {'class': 'caas-body'}},
-                          {'column_name': 'date', 'type': 'time', 'loc': {'class': ''}},
+                          {'column_name': 'full_text', 'type': 'div',
+                           'loc': {'class': 'caas-body'}},
+                          {'column_name': 'date', 'type': 'div', 'loc': {'class': 'caas-attr-time-style'}},
                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'caas-img'}},
-                          {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'caption-collapse'}},
+                          {'column_name': 'picture_caption', 'type': 'figcaption',
+                           'loc': {'class': 'caption-collapse'}},
                           {'column_name': 'authors', 'type': 'span', 'loc': {'class': 'caas-author-byline-collapse'}},
 
                       ],
@@ -140,7 +154,19 @@ class NewsDataExtractor:
             logging.info(f"[Listings] {source} Found {list(set(news_url_found))} news.")
             if news_url_found != 0:
                 news_url_found = list(set(news_url_found))
-                self.source_parameters[source]['listing_results'] = news_url_found
+                valid_urls = []
+                for url in news_url_found:
+                    if source in url:
+                        ignore_flag = False
+                        for text in self.ignore_urls_with_text:
+                            if text in url:
+                                ignore_flag = True
+                        if ignore_flag:
+                            pass
+                        else:
+                            valid_urls.append(url)
+
+                self.source_parameters[source]['listing_results'] = valid_urls
 
     def _get_news_html(self):
         for source in list(self.source_parameters.keys()):
@@ -168,12 +194,88 @@ class NewsDataExtractor:
                         'status_code': response_status,
                         'html': response_html})
 
+    def _parse_each_news(self):
+        for source in list(self.source_parameters.keys()):
+            self.source_parameters[source]['collected_data'] = []
+            for news_article in self.source_parameters[source]['news_to_collect_data']:
+                article_status = news_article['status_code']
+                url = news_article['url']
+                search_html = news_article['html']
+                if article_status == 200 and search_html is not None:
+                    generated_row = {}
+                    generated_row['url'] = url
+                    soup = BeautifulSoup(search_html, 'html.parser')
+                    # TODO: Add tolerance to accept not only class
+                    for step_dict in self.source_parameters[source]['extraction_steps']:
+                        column_name = step_dict['column_name']
+                        object_type = step_dict['type']
+                        object_param = step_dict['loc']
+                        result = None
+
+                        element = soup.find(f'{object_type}', object_param)
+                        if element is None:
+                            try:
+                                element = soup.find(class_=lambda x: x and x.startswith(object_param['class']))
+                            except:
+                                pass
+                        if element is None:
+                            try:
+                                element = soup.find(id_=lambda x: x and x.startswith(object_param['id']))
+                            except:
+                                pass
+
+                        if element is not None:
+                            if column_name == "title":
+                                result = element.text
+                            elif column_name == "description":
+                                result = element.findNext('p').text
+
+                            elif column_name == "full_text":
+                                full_text = ""
+                                all_p = element.find_all('p')
+                                if len(all_p) != 0:
+                                    for p in all_p:
+                                        if full_text == "":
+                                            full_text = f"{p.text}"
+                                        else:
+                                            full_text = f"{full_text}\n{p.text}"
+                                else:
+                                    full_text = element.text
+                                result = full_text
+                                # TODO: Remove this 50 char limitation
+                                result = result[:50]
+
+                            elif column_name == "date":
+                                try:
+                                    try:
+                                        result = str(element['datetime'])
+                                        if len(result) == 0:
+                                            result = str(element.text)
+                                    except:
+                                        result = str(element['data-timestamp'])
+                                except:
+                                    result = str(element.text)
+
+                            elif column_name == "picture_url":
+                                result = str(element['src'])
+
+                            else:
+                                result = str(element.text)
+                            generated_row[column_name] = result
+                        else:
+                            generated_row[column_name] = result
+                    self.source_parameters[source]['collected_data'].append(generated_row)
+
+            print(self.source_parameters[source]['collected_data'])
+
+
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
         self._search_news()
         self._get_news_listing()
         self._get_news_html()
+        self._parse_each_news()
 
 
 if __name__ == '__main__':
