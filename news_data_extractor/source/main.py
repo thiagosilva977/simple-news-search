@@ -21,7 +21,17 @@ class NewsDataExtractor:
         sources_config = {
             'apnews': {'text_search_url': 'https://apnews.com/search?q=', 'domain': 'https://apnews.com',
                        'enabled': True, 'captcha': False,
-                       'listing_steps': [{'type': 'div', 'loc': {'class': 'PageList-items-item'}}], },
+                       'listing_steps': [{'type': 'div', 'loc': {'class': 'PageList-items-item'}}],
+                       'extraction_steps': [
+                           {'column_name': 'title', 'type': 'h1', 'loc': {'class': 'Page-headline'}},
+                           {'column_name': 'description', 'type': 'div', 'loc': {'class': 'RichTextStoryBody RichTextBody'}},
+                           {'column_name': 'date', 'type': 'div', 'loc': {'class': 'Page-dateModified'}},
+                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'Image','alt':'Image'}},
+                           {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'Figure-caption'}},
+                           {'column_name': 'authors', 'type': 'div', 'loc': {'class': 'Page-authors'}},
+
+                       ],
+                       },
 
             'aljazeera': {'text_search_url': 'https://www.aljazeera.com/search/', 'domain': 'https://www.aljazeera.com',
                           'enabled': True, 'captcha': False,
@@ -38,11 +48,31 @@ class NewsDataExtractor:
             'gothamist': {'text_search_url': 'https://gothamist.com/search?q=', 'domain': 'https://gothamist.com',
                           'enabled': True, 'captcha': False,
                           'listing_steps': [
-                              {'type': 'div', 'loc': {'class': 'v-card gothamist-card mod-horizontal'}}], },
+                              {'type': 'div', 'loc': {'class': 'v-card gothamist-card mod-horizontal'}}], 'extraction_steps': [
+                           {'column_name': 'title', 'type': 'h1', 'loc': {'class': 'mt-4 mb-3 h2'}},
+                           {'column_name': 'description', 'type': 'div', 'loc': {'class': 'streamfield-paragraph rte-text'}},
+                           {'column_name': 'date', 'type': 'div', 'loc': {'class': 'date-published'}},
+                           {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'image native-image prime-img-class'}},
+                           {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'flexible-link null image-with-caption-credit-link image-with-caption-credit-link'}},
+                           {'column_name': 'authors', 'type': 'a', 'loc': {'class': 'flexible-link internal v-byline-author-name v-byline-author-name'}},
+
+                       ],
+                          },
 
             'yahoo': {'text_search_url': 'https://news.search.yahoo.com/search;?p=',
                       'domain': 'https://news.search.yahoo.com', 'enabled': True, 'captcha': False,
-                      'listing_steps': [{'type': 'div', 'loc': {'class': 'dd NewsArticle'}}], },
+                      'listing_steps': [{'type': 'div', 'loc': {'class': 'dd NewsArticle'}}],
+                      'extraction_steps': [
+                          {'column_name': 'title', 'type': 'h1', 'loc': {'id': 'caas-lead-header-undefined'}},
+                          {'column_name': 'description', 'type': 'div',
+                           'loc': {'class': 'caas-body'}},
+                          {'column_name': 'date', 'type': 'time', 'loc': {'class': ''}},
+                          {'column_name': 'picture_url', 'type': 'img', 'loc': {'class': 'caas-img'}},
+                          {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {'class': 'caption-collapse'}},
+                          {'column_name': 'authors', 'type': 'span', 'loc': {'class': 'caas-author-byline-collapse'}},
+
+                      ],
+                      },
         }
         if only_active:
             filtered_sources = {}
