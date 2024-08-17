@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s',
                     handlers=[logging.FileHandler("my_log.log", mode='w'),
                               logging.StreamHandler()])
@@ -19,23 +19,29 @@ class NewsDataExtractor:
 
     def _get_sources(self, only_active=False):
         sources_config = {
-            'apnews': {'text_search_url': 'https://apnews.com/search?q=', 'domain': 'https://apnews.com','enabled': True, 'captcha': False,
+            'apnews': {'text_search_url': 'https://apnews.com/search?q=', 'domain': 'https://apnews.com',
+                       'enabled': True, 'captcha': False,
                        'listing_steps': [{'type': 'div', 'loc': {'class': 'PageList-items-item'}}], },
 
-            'aljazeera': {'text_search_url': 'https://www.aljazeera.com/search/', 'domain': 'https://www.aljazeera.com','enabled': True, 'captcha': False,
+            'aljazeera': {'text_search_url': 'https://www.aljazeera.com/search/', 'domain': 'https://www.aljazeera.com',
+                          'enabled': True, 'captcha': False,
                           'listing_steps': [{'type': 'article', 'loc': {
                               'class': 'gc u-clickable-card gc--type-customsearch#result gc--list gc--with-image'}}], },
 
-            'reuters': {'text_search_url': 'https://www.reuters.com/site-search/?query=', 'domain': 'https://www.reuters.com','enabled': False,
+            'reuters': {'text_search_url': 'https://www.reuters.com/site-search/?query=',
+                        'domain': 'https://www.reuters.com', 'enabled': False,
                         'captcha': True},
 
-            'latimes': {'text_search_url': 'https://www.latimes.com/search?q=', 'domain': 'https://www.latimes.com','enabled': False, 'captcha': True},
+            'latimes': {'text_search_url': 'https://www.latimes.com/search?q=', 'domain': 'https://www.latimes.com',
+                        'enabled': False, 'captcha': True},
 
-            'gothamist': {'text_search_url': 'https://gothamist.com/search?q=', 'domain': 'https://gothamist.com','enabled': True, 'captcha': False,
+            'gothamist': {'text_search_url': 'https://gothamist.com/search?q=', 'domain': 'https://gothamist.com',
+                          'enabled': True, 'captcha': False,
                           'listing_steps': [
                               {'type': 'div', 'loc': {'class': 'v-card gothamist-card mod-horizontal'}}], },
 
-            'yahoo': {'text_search_url': 'https://news.search.yahoo.com/search;?p=', 'domain': 'https://news.search.yahoo.com','enabled': True, 'captcha': False,
+            'yahoo': {'text_search_url': 'https://news.search.yahoo.com/search;?p=',
+                      'domain': 'https://news.search.yahoo.com', 'enabled': True, 'captcha': False,
                       'listing_steps': [{'type': 'div', 'loc': {'class': 'dd NewsArticle'}}], },
         }
         if only_active:
@@ -99,20 +105,45 @@ class NewsDataExtractor:
                                         divider = ""
                                     else:
                                         divider = "/"
-                                    news_url_found.append(f"{source_domain}{divider}{a['href']}")
+                                    news_url_found.append(f"{source_domain}/{divider}{a['href']}")
 
             logging.info(f"[Listings] {source} Found {list(set(news_url_found))} news.")
             if news_url_found != 0:
                 news_url_found = list(set(news_url_found))
                 self.source_parameters[source]['listing_results'] = news_url_found
 
+    def _get_news_html(self):
+        for source in list(self.source_parameters.keys()):
+            listing_results = self.source_parameters[source]['listing_results']
+            if 'news_collect_data' not in list(self.source_parameters[source].keys()):
+                self.source_parameters[source]['news_to_collect_data'] = []
+            if len(listing_results) != 0:
+                # TODO: REMOVE THIS LIMITATION
+                listing_results = listing_results[:2]
+                for listing_url in listing_results:
+                    try:
+                        print(listing_url)
+                        response = requests.get(listing_url)
+                        response_status = response.status_code
+                        response_html = response.text
 
+                    except:
+                        response_status = 500
+                        response_html = None
+
+                    # TODO: Add elapsed time to request
+                    logging.info(f"[Request NEWS] {source} | {response_status}")
+                    self.source_parameters[source]['news_to_collect_data'].append({
+                        'url': listing_url,
+                        'status_code': response_status,
+                        'html': response_html})
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
         self._search_news()
         self._get_news_listing()
+        self._get_news_html()
 
 
 if __name__ == '__main__':
