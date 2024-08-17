@@ -1,1 +1,1 @@
-# simple-news-search
+# simple-news-search-engine
