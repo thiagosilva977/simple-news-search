@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import logging
 import re
 import datetime
+from pathlib import Path
+from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s',
@@ -20,6 +22,7 @@ class NewsDataExtractor:
         self.source_parameters = {}
         self.ignore_urls_with_text = ['/staff/']
         self.extracted_data = []
+        self.current_folder = Path(__file__).resolve().parent
 
     def _get_sources(self, only_active=False):
         sources_config = {
@@ -330,11 +333,76 @@ class NewsDataExtractor:
             except Exception as e:
                 return None  # Handle errors gracefully
 
+        def contains_monetary_info(text):
+
+            if not isinstance(text, str):
+                return False
+
+            # Define patterns to match common currency symbols and keywords
+            monetary_patterns = [
+                r'\$\d+',  # Matches dollar amounts like $100
+                r'€\d+',  # Matches euro amounts like €100
+                r'£\d+',  # Matches pound amounts like £100
+                r'\d+\s?(dollars|USD|euros|pounds)',  # Matches written forms like "100 dollars"
+                r'\d+\s?(cents|pennies)',  # Matches small units like "50 cents"
+                r'\d+\s?₹',  # Matches rupee amounts like ₹100
+                r'¥\d+',  # Matches yen amounts like ¥100
+                r'\d+\s?(yen|RMB|yuan)'  # Matches written forms like "100 yen"
+            ]
+
+            pattern = '|'.join(monetary_patterns)
+
+            return bool(re.search(pattern, text, re.IGNORECASE))
+
+        def download_image(image_url, save_directory=None):
+            try:
+                # Send a GET request to the image URL
+                response = requests.get(image_url, stream=True)
+                response.raise_for_status()
+
+                # Extract the image file name and extension from the URL
+                parsed_url = urlparse(image_url)
+                image_name = Path(parsed_url.path).name
+
+                if save_directory is None:
+                    save_directory = f"{self.current_folder}/downloaded_images"
+                # Ensure the save directory exists
+                save_path = Path(save_directory)
+                save_path.mkdir(parents=True, exist_ok=True)
+
+                # Determine the image format and file extension
+                image_extension = Path(image_name).suffix.lower()
+                if not image_extension:
+                    # If no extension is found in the URL, infer from the content type
+                    content_type = response.headers.get('Content-Type')
+                    if content_type == 'image/jpeg':
+                        image_extension = '.jpg'
+                    elif content_type == 'image/png':
+                        image_extension = '.png'
+                    elif content_type == 'image/webp':
+                        image_extension = '.webp'
+                    else:
+                        return None
+                    image_name += image_extension
+
+                # Save the image to the specified directory
+                image_path = save_path / image_name
+                with open(image_path, 'wb') as image_file:
+                    for chunk in response.iter_content(1024):
+                        image_file.write(chunk)
+
+                return str(image_path)
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error downloading the image: {e}")
+                return None
+            except ValueError as e:
+                print(e)
+                return None
+
         formatted_rows = []
         for row in self.extracted_data:
             if row['title'] is not None:
-                print(row)
-                print(str(row['date']))
                 if '·' in str(row['date']):
                     row['date'] = str(row['date']).split('·')[0].strip()
                 elif 'Published' in str(row['date']):
@@ -345,9 +413,18 @@ class NewsDataExtractor:
                 for value_to_remove in to_remove:
                     if value_to_remove in str(row['date']).upper():
                         row['date'] = str(row['date']).split(f"{str(row['date']).split(',')[0]},")[1].strip()
-                print(str(row['date']))
                 formatted_date = parse_date(str(row['date']))
-                print(formatted_date)
+                row['date'] = formatted_date
+                row['title'] = clean_text(row['title'])
+                row['description'] = clean_text(row['description'])
+                row['full_text'] = clean_text(row['full_text'])
+                row['authors'] = clean_text(row['authors'])
+                monetary_info = contains_monetary_info(row['title'])
+                if not monetary_info:
+                    monetary_info = contains_monetary_info(row['description'])
+                row['contains_monetary'] = monetary_info
+                picture_downloaded = download_image(image_url=row['picture_url'])
+
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
