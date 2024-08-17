@@ -310,6 +310,7 @@ class NewsDataExtractor:
                 formats = [
                     "%B %d, %Y at %I:%M %p",  # e.g., August 17, 2024 at 6:23 PM
                     "%Y-%m-%d",  # e.g., 2024-08-17
+                    "%A, %B %d, %Y, %I:%M %p",  # e.g., Saturday, August 17, 2024, 6:47 PM
                     "%b %d, %Y",  # e.g., Aug 8, 2024
                     "%B %d, %Y",  # e.g., August 17, 2024
                     "%b %d, %YModified %b %d, %Y"  # e.g., Published Jul 18, 2024Modified Jul 19, 2024
@@ -340,7 +341,11 @@ class NewsDataExtractor:
                     row['date'] = str(row['date']).split('Published')[1].strip()
                     if 'Modified' in str(row['date']):
                         row['date'] = str(row['date']).split('Modified')[0].strip()
-
+                to_remove = ['SAT,', 'MON,', 'WED,', 'THU,', 'FRI', 'TUE,', 'SUN,']
+                for value_to_remove in to_remove:
+                    if value_to_remove in str(row['date']).upper():
+                        row['date'] = str(row['date']).split(f"{str(row['date']).split(',')[0]},")[1].strip()
+                print(str(row['date']))
                 formatted_date = parse_date(str(row['date']))
                 print(formatted_date)
 
