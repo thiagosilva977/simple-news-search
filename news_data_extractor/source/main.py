@@ -3,6 +3,8 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import logging
+import re
+import datetime
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s',
@@ -17,6 +19,7 @@ class NewsDataExtractor:
         self.search_parameters = search_parameters
         self.source_parameters = {}
         self.ignore_urls_with_text = ['/staff/']
+        self.extracted_data = []
 
     def _get_sources(self, only_active=False):
         sources_config = {
@@ -202,8 +205,7 @@ class NewsDataExtractor:
                 url = news_article['url']
                 search_html = news_article['html']
                 if article_status == 200 and search_html is not None:
-                    generated_row = {}
-                    generated_row['url'] = url
+                    generated_row = {'url': url, 'source': source}
                     soup = BeautifulSoup(search_html, 'html.parser')
                     # TODO: Add tolerance to accept not only class
                     for step_dict in self.source_parameters[source]['extraction_steps']:
@@ -267,7 +269,80 @@ class NewsDataExtractor:
                     self.source_parameters[source]['collected_data'].append(generated_row)
 
             print(self.source_parameters[source]['collected_data'])
+            if len(self.source_parameters[source]['collected_data']) != 0:
+                self.extracted_data = self.extracted_data + self.source_parameters[source]['collected_data']
 
+    def _normalize_all_data(self):
+        def clean_text(text):
+            """
+            Normalize text by removing extra spaces, HTML tags, and unwanted characters.
+
+            Parameters:
+            text (str): The text to be cleaned.
+
+            Returns:
+            str: Cleaned text.
+            """
+            if not isinstance(text, str):
+                return text
+            # Remove HTML tags
+            text = BeautifulSoup(text, "html.parser").get_text()
+            # Remove unwanted characters
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text
+
+        def parse_date(date_str):
+            """
+            Parse different date formats and convert them to datetime format.
+
+            Parameters:
+            date_str (str): The date string to be parsed.
+
+            Returns:
+            datetime: The parsed datetime object or None if parsing fails.
+            """
+            try:
+                # Case where date is a timestamp in milliseconds
+                if date_str.isdigit():
+                    return datetime.datetime.fromtimestamp(int(date_str) / 1000)
+
+                # Case where date is a standard formatted date string
+                formats = [
+                    "%B %d, %Y at %I:%M %p",  # e.g., August 17, 2024 at 6:23 PM
+                    "%Y-%m-%d",  # e.g., 2024-08-17
+                    "%b %d, %Y",  # e.g., Aug 8, 2024
+                    "%B %d, %Y",  # e.g., August 17, 2024
+                    "%b %d, %YModified %b %d, %Y"  # e.g., Published Jul 18, 2024Modified Jul 19, 2024
+                ]
+
+                for fmt in formats:
+                    try:
+                        return datetime.datetime.strptime(date_str, fmt)
+                    except ValueError:
+                        continue
+
+                # Handle "Published" and "Modified" dates with keywords
+                if "Published" in date_str or "Modified" in date_str:
+                    cleaned_str = re.sub(r"(Published|Modified)\s*", "", date_str)
+                    return parse_date(cleaned_str)
+
+            except Exception as e:
+                return None  # Handle errors gracefully
+
+        formatted_rows = []
+        for row in self.extracted_data:
+            if row['title'] is not None:
+                print(row)
+                print(str(row['date']))
+                if '·' in str(row['date']):
+                    row['date'] = str(row['date']).split('·')[0].strip()
+                elif 'Published' in str(row['date']):
+                    row['date'] = str(row['date']).split('Published')[1].strip()
+                    if 'Modified' in str(row['date']):
+                        row['date'] = str(row['date']).split('Modified')[0].strip()
+
+                formatted_date = parse_date(str(row['date']))
+                print(formatted_date)
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
@@ -276,6 +351,7 @@ class NewsDataExtractor:
         self._get_news_listing()
         self._get_news_html()
         self._parse_each_news()
+        self._normalize_all_data()
 
 
 if __name__ == '__main__':
