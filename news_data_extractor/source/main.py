@@ -53,8 +53,10 @@ class NewsDataExtractor:
         try:
             self.nlp = spacy.load('en_core_web_sm')
         except OSError:
+            logging.info(f"Downloading spacy model.")
             os.system("python -m spacy download en_core_web_sm")
             self.nlp = spacy.load('en_core_web_sm')
+        self.processed_raw_data = []
 
     @staticmethod
     def _get_sources(only_active=False):
@@ -167,6 +169,7 @@ class NewsDataExtractor:
                 response_html = response.text
 
             except requests.RequestException:
+                logging.warning(f"Request 500")
                 response_status = 500
                 response_html = None
 
@@ -250,8 +253,6 @@ class NewsDataExtractor:
             listing_results = self.source_parameters[source]['listing_results']
 
             if len(listing_results) != 0:
-                # TODO: REMOVE THIS LIMITATION
-                listing_results = listing_results[:2]
                 for listing_url in listing_results:
                     try:
                         print(listing_url)
@@ -329,8 +330,6 @@ class NewsDataExtractor:
                                 else:
                                     full_text = element.text
                                 result = full_text
-                                # TODO: Remove this 50 char limitation
-                                result = result[:50]
 
                             elif column_name == "date":
                                 try:
@@ -481,6 +480,7 @@ class NewsDataExtractor:
                     return parse_date(cleaned_str)
 
             except ValueError:
+                logging.warning('Failed to parse Date')
                 return None
 
         def contains_monetary_info(text):
@@ -544,12 +544,14 @@ class NewsDataExtractor:
                 return str(image_path)
 
             except requests.exceptions.RequestException as e:
-                print(f"Error downloading the image: {e}")
+                logging.warning(f"Error downloading the image: {e}")
                 return None
             except ValueError as e:
                 print(e)
+                logging.warning(f"Error downloading the image: {e}")
                 return None
             except OSError:
+                logging.warning(f"Error downloading the image")
                 return None
 
         formatted_rows = []
@@ -579,7 +581,7 @@ class NewsDataExtractor:
                 row['picture_path'] = picture_downloaded
                 row['embedding'] = self.generate_text_embedding(text=f"{row['title']} {row['full_text']}")
                 formatted_rows.append(row)
-
+        self.processed_raw_data = formatted_rows
         self.normalized_data = pd.DataFrame(formatted_rows)
 
     @staticmethod
@@ -645,15 +647,16 @@ class NewsDataExtractor:
         if not self.filtered_news.empty:
             self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
             self.filtered_news.to_excel(f"{self.root_folder}/output/results.xlsx")
-            return self.filtered_news
+            return self.filtered_news, self.processed_raw_data
         else:
-            return None
+            return None, self.processed_raw_data
 
     def extraction_manager(self):
         """
         Function that initialize every step.
         :return:
         """
+        logging.info(f"Initializing Class")
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
         self.search_news()
@@ -674,12 +677,13 @@ def initialize_step_1(user_input):
     :param user_input:
     :return:
     """
-    print('initializing class')
+    logging.info(f"Initializing Class")
     bot_class = NewsDataExtractor(search_parameters=user_input)
-    print('initializing function 1')
+    logging.info('initializing function 1 - Search News')
     bot_class.search_news()
-    print('initializing function 2')
+    logging.info('initializing function 2 - Get URLs from Listings')
     bot_class.get_news_listing()
+    logging.info('initializing function 3 - Get HTML from each news')
     updated_parameters = bot_class.get_news_html()
     return updated_parameters
 
@@ -695,11 +699,16 @@ def initialize_step_2(user_input, source_parameters):
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input,
                                   source_parameters=source_parameters)
+    logging.info('initializing function 4 - Extract raw data')
     bot_class.parse_each_news()
+    logging.info('initializing function 5 - Normalize Data')
     bot_class.normalize_all_data()
+    logging.info('initializing function 6 - Filter Data')
     bot_class.filter_data()
-    final_df = bot_class.save_final_data()
-    return final_df
+    logging.info('initializing function 7 - Save Final Data')
+    final_df, processed_raw_data = bot_class.save_final_data()
+    print(final_df)
+    return final_df, processed_raw_data
 
 
 if __name__ == '__main__':

@@ -41,4 +41,5 @@ def step_2():
     if df_created is not None and not df_created.empty:
         df_created.to_excel('output/result.xlsx')
         df_created['date'] = df_created['date'].astype(str)
+        print(df_created)
         workitems.outputs.create(payload=df_created.to_dict('records'))
