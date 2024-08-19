@@ -13,6 +13,7 @@ import pandas as pd
 import configparser
 from RPA.Robocorp.WorkItems import WorkItems
 
+
 @task
 def step_1():
     try:
@@ -20,23 +21,22 @@ def step_1():
         print("Received payload:", item.payload)
         user_input = item.payload
     except:
-        with open('devdata/env.json', 'r') as f:
-            user_input = json.load(f)
-    
+        user_input = {"text_phrase": "Olympic Paris", "news_category": "", "max_months": 2}
 
     updated_parameters = rpa_main_file.initialize_step_1(user_input=user_input)
 
-    output_json = {'result_step_1':updated_parameters,"user_inputs":user_input}
+    output_json = {'result_step_1': updated_parameters, "user_inputs": user_input}
     workitems.outputs.create(output_json)
+
 
 @task
 def step_2():
     step_1_results = workitems.inputs.current.payload['result_step_1']
     step_1_inputs = workitems.inputs.current.payload['user_inputs']
     df_created = rpa_main_file.initialize_step_2(user_input=step_1_inputs,
-                                    source_parameters=step_1_results)
+                                                 source_parameters=step_1_results)
     print(df_created)
     if df_created is not None and not df_created.empty:
         df_created.to_excel('output/result.xlsx')
         df_created['date'] = df_created['date'].astype(str)
-        workitems.outputs.create(payload= df_created.to_dict('records'))
+        workitems.outputs.create(payload=df_created.to_dict('records'))

@@ -138,6 +138,11 @@ class NewsDataExtractor:
             return sources_config
 
     def search_news(self):
+        """
+        Function responsible for collecting listed news based on some text.
+
+        :return:
+        """
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
 
@@ -167,6 +172,11 @@ class NewsDataExtractor:
             return self.source_parameters
 
     def get_news_listing(self):
+        """
+        Function responsible for getting every news URL.
+
+        :return:
+        """
         for source in list(self.source_parameters.keys()):
             if 'search_results' not in list(self.source_parameters[source].keys()):
                 pass
@@ -219,6 +229,11 @@ class NewsDataExtractor:
                     self.source_parameters[source]['listing_results'] = valid_urls
 
     def get_news_html(self):
+        """
+        Function responsible for getting entire html for some specific news.
+
+        :return:
+        """
         for source in list(self.source_parameters.keys()):
 
             if 'news_collect_data' not in list(self.source_parameters[source].keys()):
@@ -250,6 +265,11 @@ class NewsDataExtractor:
         return self.source_parameters
 
     def parse_each_news(self):
+        """
+        Function responsible for collecting raw data.
+
+        :return:
+        """
         for source in list(self.source_parameters.keys()):
             self.source_parameters[source]['collected_data'] = []
             for news_article in self.source_parameters[source]['news_to_collect_data']:
@@ -330,18 +350,36 @@ class NewsDataExtractor:
                 self.extracted_data = self.extracted_data + self.source_parameters[source]['collected_data']
 
     def generate_text_embedding(self, text: str):
+        """
+        Function responsible for creating embeddings from text.
 
+        :param text:
+        :return:
+        """
         text_embedding = self.nlp(text).vector
         return text_embedding
 
     @staticmethod
     def nlp_cosine_similarity(vector_a, vector_b):
+        """
+        Function responsible for creating cosine similarity based in two embeddings.
+
+        :param vector_a:
+        :param vector_b:
+        :return:
+        """
         dot_product = np.dot(vector_a, vector_b)
         magnitude_a = np.linalg.norm(vector_a)
         magnitude_b = np.linalg.norm(vector_b)
         return dot_product / (magnitude_a * magnitude_b)
 
     def calculate_similarity_from_text(self, df: pd.DataFrame, text: str) -> pd.DataFrame:
+        """
+        Function that is responsible for creating a new column to refer similarities distances.
+        :param df:
+        :param text:
+        :return:
+        """
 
         text_embedding = self.generate_text_embedding(text)
 
@@ -353,6 +391,13 @@ class NewsDataExtractor:
 
     @staticmethod
     def filter_similarity_by_closest(df, max_percentage=0.1):
+        """
+        Nearest Neighbors similarity.
+
+        :param df:
+        :param max_percentage:
+        :return:
+        """
         # Determine the cutoff similarity value for the top 'top_percent' of similar entries
         max_similarity = df['similarities'].max()
         cutoff_similarity = max_similarity * (1 - max_percentage)
@@ -363,6 +408,11 @@ class NewsDataExtractor:
         return df_filtered
 
     def normalize_all_data(self):
+        """
+        Function responsible to normalize every column in raw collected data.
+
+        :return:
+        """
         def clean_text(text):
             """
             Normalize text by removing extra spaces, HTML tags, and unwanted characters.
@@ -521,6 +571,14 @@ class NewsDataExtractor:
 
     @staticmethod
     def filter_by_date(df: pd.DataFrame, months_back: int, date_column: str = 'date') -> pd.DataFrame:
+        """
+        Filter data by date.
+
+        :param df:
+        :param months_back:
+        :param date_column:
+        :return:
+        """
 
         # Ensure the date_column is in datetime format
         df[date_column] = pd.to_datetime(df[date_column])
@@ -542,6 +600,11 @@ class NewsDataExtractor:
         return df_filtered
 
     def filter_data(self):
+        """
+        Filter data based in nearest neighbors by  text or caregory.
+
+        :return:
+        """
 
         if self.search_parameters['news_category'] is not None and self.search_parameters['news_category'] != "":
             df = self.calculate_similarity_from_text(df=self.normalized_data,
@@ -561,6 +624,11 @@ class NewsDataExtractor:
         self.filtered_news = df.copy()
 
     def save_final_data(self):
+        """
+        Saves all the collected and normalized data to xlsx format.
+
+        :return:
+        """
         if not self.filtered_news.empty:
             self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
             self.filtered_news.to_excel(f"{self.root_folder}/output/results.xlsx")
@@ -569,6 +637,10 @@ class NewsDataExtractor:
             return None
 
     def extraction_manager(self):
+        """
+        Function that initialize every step.
+        :return:
+        """
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
         self.search_news()
@@ -580,10 +652,15 @@ class NewsDataExtractor:
         self.filter_data()
         print(self.filtered_news)
         self.save_final_data()
-        # Test commit
 
 
 def initialize_step_1(user_input):
+    """
+    Function that only collect data from websites.
+
+    :param user_input:
+    :return:
+    """
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input)
     print('initializing function 1')
@@ -595,6 +672,13 @@ def initialize_step_1(user_input):
 
 
 def initialize_step_2(user_input, source_parameters):
+    """
+    Function that just clean the data collected in step 1.
+
+    :param user_input:
+    :param source_parameters:
+    :return:
+    """
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input,
                                   source_parameters=source_parameters)
