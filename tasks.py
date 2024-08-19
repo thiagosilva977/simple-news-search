@@ -20,8 +20,10 @@ def step_1():
         item = workitems.inputs.current
         print("Received payload:", item.payload)
         user_input = item.payload
+        if user_input is None or user_input == "":
+            user_input = {"text_phrase": "Olympic Paris", "news_category": "Sports", "max_months": 2}
     except:
-        user_input = {"text_phrase": "Olympic Paris", "news_category": "", "max_months": 2}
+        user_input = {"text_phrase": "Olympic Paris", "news_category": "Sports", "max_months": 2}
 
     updated_parameters = rpa_main_file.initialize_step_1(user_input=user_input)
 
