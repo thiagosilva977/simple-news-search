@@ -23,12 +23,13 @@ logging.basicConfig(level=logging.INFO,
 class NewsDataExtractor:
     def __init__(self, search_parameters: dict = None):
         if search_parameters is None:
-            search_parameters = {'text_phrase': "Olympic Paris", 'news_category': str, 'max_months': int}
+            search_parameters = {'text_phrase': "Olympic Paris", 'news_category': None, 'max_months': 2}
         self.search_parameters = search_parameters
         self.source_parameters = {}
         self.ignore_urls_with_text = ['/staff/']
         self.extracted_data = []
         self.current_folder = Path(__file__).resolve().parent
+        self.root_folder = Path(__file__).resolve().parent.parent.parent
         self.normalized_data = pd.DataFrame([])
         self.filtered_news = pd.DataFrame([])
 
@@ -444,6 +445,8 @@ class NewsDataExtractor:
             except ValueError as e:
                 print(e)
                 return None
+            except OSError:
+                return None
 
         formatted_rows = []
         for row in self.extracted_data:
@@ -475,8 +478,30 @@ class NewsDataExtractor:
 
         self.normalized_data = pd.DataFrame(formatted_rows)
 
-    def filter_by_similar_topics(self):
-        if self.search_parameters['news_category'] is not None or self.search_parameters['news_category'] != "":
+    def filter_by_date(self, df: pd.DataFrame, months_back: int, date_column: str = 'date') -> pd.DataFrame:
+
+        # Ensure the date_column is in datetime format
+        df[date_column] = pd.to_datetime(df[date_column])
+
+        # Get the current date
+        current_date = datetime.datetime.now()
+
+        # Calculate the start date
+        if months_back <= 1:
+            start_date = current_date.replace(day=1)
+        else:
+            # Calculate the start date for the number of months_back
+            first_day_of_current_month = current_date.replace(day=1)
+            start_date = first_day_of_current_month - pd.DateOffset(months=months_back - 1)
+
+        # Filter the DataFrame
+        df_filtered = df[df[date_column] >= start_date]
+
+        return df_filtered
+
+    def filter_data(self):
+
+        if self.search_parameters['news_category'] is not None and self.search_parameters['news_category'] != "":
             df = self.calculate_similarity_from_text(df=self.normalized_data,
                                                      text=self.search_parameters['news_category'])
             df = self.filter_similarity_by_closest(df=df, max_percentage=0.3)
@@ -489,7 +514,14 @@ class NewsDataExtractor:
                                                      text=self.search_parameters['text_phrase'])
             df = self.filter_similarity_by_closest(df=df)
 
+        if self.search_parameters['max_months'] is not None:
+            df = self.filter_by_date(df=df, months_back=int(self.search_parameters['max_months']))
         self.filtered_news = df.copy()
+
+    def save_final_data(self):
+        if not self.filtered_news.empty:
+            self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
+            self.filtered_news.to_excel(f"{self.root_folder}/output/results.xlsx")
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
@@ -499,7 +531,10 @@ class NewsDataExtractor:
         self._get_news_html()
         self._parse_each_news()
         self._normalize_all_data()
-        self.filter_by_similar_topics()
+        print(self.normalized_data)
+        self.filter_data()
+        print(self.filtered_news)
+        self.save_final_data()
 
 
 if __name__ == '__main__':
