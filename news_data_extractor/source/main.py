@@ -30,6 +30,7 @@ class NewsDataExtractor:
         self.extracted_data = []
         self.current_folder = Path(__file__).resolve().parent
         self.normalized_data = pd.DataFrame([])
+        self.filtered_news = pd.DataFrame([])
 
         try:
             self.nlp = spacy.load('en_core_web_sm')
@@ -474,6 +475,22 @@ class NewsDataExtractor:
 
         self.normalized_data = pd.DataFrame(formatted_rows)
 
+    def filter_by_similar_topics(self):
+        if self.search_parameters['news_category'] is not None or self.search_parameters['news_category'] != "":
+            df = self.calculate_similarity_from_text(df=self.normalized_data,
+                                                     text=self.search_parameters['news_category'])
+            df = self.filter_similarity_by_closest(df=df, max_percentage=0.3)
+
+            df = self.calculate_similarity_from_text(df=df,
+                                                     text=self.search_parameters['text_phrase'])
+            df = self.filter_similarity_by_closest(df=df)
+        else:
+            df = self.calculate_similarity_from_text(df=self.normalized_data,
+                                                     text=self.search_parameters['text_phrase'])
+            df = self.filter_similarity_by_closest(df=df)
+
+        self.filtered_news = df.copy()
+
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
@@ -482,6 +499,7 @@ class NewsDataExtractor:
         self._get_news_html()
         self._parse_each_news()
         self._normalize_all_data()
+        self.filter_by_similar_topics()
 
 
 if __name__ == '__main__':
