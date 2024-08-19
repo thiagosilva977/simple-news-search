@@ -558,31 +558,34 @@ class NewsDataExtractor:
 
         formatted_rows = []
         for row in self.extracted_data:
-            if row['title'] is not None:
-                if '·' in str(row['date']):
-                    row['date'] = str(row['date']).split('·')[0].strip()
-                elif 'Published' in str(row['date']):
-                    row['date'] = str(row['date']).split('Published')[1].strip()
-                    if 'Modified' in str(row['date']):
-                        row['date'] = str(row['date']).split('Modified')[0].strip()
-                to_remove = ['SAT,', 'MON,', 'WED,', 'THU,', 'FRI', 'TUE,', 'SUN,']
-                for value_to_remove in to_remove:
-                    if value_to_remove in str(row['date']).upper():
-                        row['date'] = str(row['date']).split(f"{str(row['date']).split(',')[0]},")[1].strip()
-                formatted_date = parse_date(str(row['date']))
-                row['date'] = formatted_date
-                row['title'] = clean_text(row['title'])
-                row['description'] = clean_text(row['description'])
-                row['full_text'] = clean_text(row['full_text'])
-                row['authors'] = clean_text(row['authors'])
-                monetary_info = contains_monetary_info(row['title'])
-                if not monetary_info:
-                    monetary_info = contains_monetary_info(row['description'])
-                row['contains_monetary'] = monetary_info
-                picture_downloaded = download_image(image_url=row['picture_url'])
-                row['picture_path'] = picture_downloaded
-                row['embedding'] = self.generate_text_embedding(text=f"{row['title']} {row['full_text']}")
-                formatted_rows.append(row)
+            try:
+                if row['title'] is not None:
+                    if '·' in str(row['date']):
+                        row['date'] = str(row['date']).split('·')[0].strip()
+                    elif 'Published' in str(row['date']):
+                        row['date'] = str(row['date']).split('Published')[1].strip()
+                        if 'Modified' in str(row['date']):
+                            row['date'] = str(row['date']).split('Modified')[0].strip()
+                    to_remove = ['SAT,', 'MON,', 'WED,', 'THU,', 'FRI', 'TUE,', 'SUN,']
+                    for value_to_remove in to_remove:
+                        if value_to_remove in str(row['date']).upper():
+                            row['date'] = str(row['date']).split(f"{str(row['date']).split(',')[0]},")[1].strip()
+                    formatted_date = parse_date(str(row['date']))
+                    row['date'] = formatted_date
+                    row['title'] = clean_text(row['title'])
+                    row['description'] = clean_text(row['description'])
+                    row['full_text'] = clean_text(row['full_text'])
+                    row['authors'] = clean_text(row['authors'])
+                    monetary_info = contains_monetary_info(row['title'])
+                    if not monetary_info:
+                        monetary_info = contains_monetary_info(row['description'])
+                    row['contains_monetary'] = monetary_info
+                    picture_downloaded = download_image(image_url=row['picture_url'])
+                    row['picture_path'] = picture_downloaded
+                    row['embedding'] = self.generate_text_embedding(text=f"{row['title']} {row['full_text']}")
+                    formatted_rows.append(row)
+            except:
+                pass
         self.processed_raw_data = formatted_rows
         self.normalized_data = pd.DataFrame(formatted_rows)
 
