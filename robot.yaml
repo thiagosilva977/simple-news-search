@@ -2,8 +2,10 @@
 # https://github.com/robocorp/rcc/blob/master/docs/recipes.md#what-is-in-robotyaml
 
 tasks:
-  Run Task:
-    shell: python -m robocorp.tasks run tasks.py
+  ExtractData:
+    shell: python -m robocorp.tasks run tasks.py -t step_1
+  FormatData:
+    shell: python -m robocorp.tasks run tasks.py -t step_2
 
 environmentConfigs:
   - environment_windows_amd64_freeze.yaml

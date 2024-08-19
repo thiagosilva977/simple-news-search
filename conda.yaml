@@ -13,3 +13,14 @@ dependencies:
     - rpaframework==28.5.1        # https://rpaframework.org/releasenotes.html
     - robocorp==2.0.1             # https://pypi.org/project/robocorp
     - robocorp-browser==2.3.3     # https://pypi.org/project/robocorp-browser
+    - setuptools
+    - beautifulsoup4
+    - click
+    - lxml
+    - numpy<2
+    - pandas
+    - pyarrow
+    - requests
+    - spacy
+    - sentence-transformers
+    - openpyxl

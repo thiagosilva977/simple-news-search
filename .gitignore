@@ -1,6 +1,5 @@
 output/
 venv/
-.venv/
 temp/
 .rpa/
 .idea/
@@ -12,15 +11,13 @@ temp/
 .DS_Store
 *.pyc
 *.zip
-*/work-items-out/*
+devdata/work-items-out/
 testrun/*
 .~lock*
 *.pkl
-.build/*
-./build
+.venv
+*.png
+*.jpeg
 build/lib/news_data_extractor/__init__.py
 build/lib/news_data_extractor/source/__init__.py
 build/lib/news_data_extractor/source/main.py
-news_data_extractor/source/downloaded_images/*
-*.egg
-*.egg-info

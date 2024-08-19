@@ -4,7 +4,6 @@ import os
 import re
 from pathlib import Path
 from urllib.parse import urlparse
-
 import numpy as np
 import pandas as pd
 import requests
@@ -137,6 +136,10 @@ class NewsDataExtractor:
             return sources_config
 
     def _search_news(self):
+        self.source_parameters = self._get_sources(only_active=True)
+        logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
+        
+        print(self.source_parameters.keys())
         for source in list(self.source_parameters.keys()):
             search_url = self.source_parameters[source]['text_search_url']
             search_text = self.search_parameters['text_phrase']
@@ -155,64 +158,73 @@ class NewsDataExtractor:
 
             # TODO: Add elapsed time to request
             logging.info(f"[Request] {source} | {response_status}")
+            if 'search_results' not in list(self.source_parameters[source].keys()):
+                self.source_parameters[source]['search_results'] = {}
             self.source_parameters[source]['search_results'] = {'status_code': response_status,
                                                                 'html': response_html}
             return self.source_parameters
 
     def _get_news_listing(self):
         for source in list(self.source_parameters.keys()):
-            search_status = self.source_parameters[source]['search_results']['status_code']
-            search_html = self.source_parameters[source]['search_results']['html']
-            news_url_found = []
-            if search_status == 200:
-                # TODO: Add tolerance to accept not only class
-                listing_object_class_name = self.source_parameters[source]['listing_steps'][0]['loc']['class']
-                listing_object_type = self.source_parameters[source]['listing_steps'][0]['type']
-                listing_object_properties = self.source_parameters[source]['listing_steps'][0]['loc']
-                source_domain = self.source_parameters[source]['domain']
-                soup = BeautifulSoup(search_html, 'html.parser')
-                elements = soup.find_all(class_=lambda x: x and x.startswith(listing_object_class_name))
-                if len(elements) == 0:
-                    elements = soup.find_all(f"{listing_object_type}", listing_object_properties)
-                if len(elements) != 0:
-                    for element in elements:
-                        http_urls = [a['href'] for a in element.find_all('a', href=True) if
-                                     a['href'].startswith('https')]
-                        if isinstance(http_urls, list):
-                            if len(http_urls) != 0:
-                                news_url_found = news_url_found + http_urls
+            if 'search_results' not in list(self.source_parameters[source].keys()):
+                pass
+            else:
+                search_status = self.source_parameters[source]['search_results']['status_code']
+                search_html = self.source_parameters[source]['search_results']['html']
+                news_url_found = []
+                if search_status == 200:
+                    # TODO: Add tolerance to accept not only class
+                    listing_object_class_name = self.source_parameters[source]['listing_steps'][0]['loc']['class']
+                    listing_object_type = self.source_parameters[source]['listing_steps'][0]['type']
+                    listing_object_properties = self.source_parameters[source]['listing_steps'][0]['loc']
+                    source_domain = self.source_parameters[source]['domain']
+                    soup = BeautifulSoup(search_html, 'html.parser')
+                    elements = soup.find_all(class_=lambda x: x and x.startswith(listing_object_class_name))
+                    if len(elements) == 0:
+                        elements = soup.find_all(f"{listing_object_type}", listing_object_properties)
+                    if len(elements) != 0:
+                        for element in elements:
+                            http_urls = [a['href'] for a in element.find_all('a', href=True) if
+                                        a['href'].startswith('https')]
+                            if isinstance(http_urls, list):
+                                if len(http_urls) != 0:
+                                    news_url_found = news_url_found + http_urls
+                                else:
+                                    # Another way to get urls, not that safe but works.
+                                    a_list = element.find_all('a', href=True)
+                                    for a in a_list:
+                                        if str(a['href'])[0] == '/':
+                                            divider = ""
+                                        else:
+                                            divider = "/"
+                                        news_url_found.append(f"{source_domain}/{divider}{a['href']}")
+
+                logging.info(f"[Listings] {source} Found {list(set(news_url_found))} news.")
+                if news_url_found != 0:
+                    news_url_found = list(set(news_url_found))
+                    valid_urls = []
+                    for url in news_url_found:
+                        if source in url:
+                            ignore_flag = False
+                            for text in self.ignore_urls_with_text:
+                                if text in url:
+                                    ignore_flag = True
+                            if ignore_flag:
+                                pass
                             else:
-                                # Another way to get urls, not that safe but works.
-                                a_list = element.find_all('a', href=True)
-                                for a in a_list:
-                                    if str(a['href'])[0] == '/':
-                                        divider = ""
-                                    else:
-                                        divider = "/"
-                                    news_url_found.append(f"{source_domain}/{divider}{a['href']}")
+                                valid_urls.append(url)
 
-            logging.info(f"[Listings] {source} Found {list(set(news_url_found))} news.")
-            if news_url_found != 0:
-                news_url_found = list(set(news_url_found))
-                valid_urls = []
-                for url in news_url_found:
-                    if source in url:
-                        ignore_flag = False
-                        for text in self.ignore_urls_with_text:
-                            if text in url:
-                                ignore_flag = True
-                        if ignore_flag:
-                            pass
-                        else:
-                            valid_urls.append(url)
-
-                self.source_parameters[source]['listing_results'] = valid_urls
+                    self.source_parameters[source]['listing_results'] = valid_urls
 
     def _get_news_html(self):
         for source in list(self.source_parameters.keys()):
-            listing_results = self.source_parameters[source]['listing_results']
+           
             if 'news_collect_data' not in list(self.source_parameters[source].keys()):
                 self.source_parameters[source]['news_to_collect_data'] = []
+            if 'listing_results' not in list(self.source_parameters[source].keys()):
+                self.source_parameters[source]['listing_results'] = []
+            listing_results = self.source_parameters[source]['listing_results']
+
             if len(listing_results) != 0:
                 # TODO: REMOVE THIS LIMITATION
                 listing_results = listing_results[:2]
@@ -233,6 +245,7 @@ class NewsDataExtractor:
                         'url': listing_url,
                         'status_code': response_status,
                         'html': response_html})
+        return self.source_parameters
 
     def _parse_each_news(self):
         for source in list(self.source_parameters.keys()):
@@ -541,6 +554,10 @@ class NewsDataExtractor:
         if not self.filtered_news.empty:
             self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
             self.filtered_news.to_excel(f"{self.root_folder}/output/results.xlsx")
+            return self.filtered_news
+        else:
+            return None
+
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
@@ -555,6 +572,27 @@ class NewsDataExtractor:
         print(self.filtered_news)
         self.save_final_data()
         # Test commit
+
+def initialize_step_1(user_input):
+    print('initializing class')
+    bot_class = NewsDataExtractor(search_parameters=user_input)
+    print('initializing function 1')
+    bot_class._search_news()
+    print('initializing function 2')
+    bot_class._get_news_listing()
+    updated_parameters = bot_class._get_news_html()
+    return updated_parameters
+
+
+def initialize_step_2(user_input,source_parameters):
+    print('initializing class')
+    bot_class = NewsDataExtractor(search_parameters=user_input,
+                                  source_parameters=source_parameters)
+    bot_class._parse_each_news()
+    bot_class._normalize_all_data()
+    bot_class.filter_data()
+    final_df = bot_class.save_final_data()
+    return final_df
 
 
 if __name__ == '__main__':
