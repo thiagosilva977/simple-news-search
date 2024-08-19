@@ -1,88 +1,75 @@
-# Template: Python - Producer-Consumer
+# simple-news-search-engine
+## Overview
+The simple-news-search-engine project is a comprehensive tool designed to automate the process of collecting, parsing, and analyzing news data from various online sources. 
 
-This template leverages the new [Python framework](https://github.com/robocorp/robocorp), the [libraries](https://github.com/robocorp/robocorp/blob/master/docs/README.md#python-libraries) from to same project as well.
+It uses a combination of web scraping (via BeautifulSoup), natural language processing (with SpaCy and SentenceTransformers), and machine learning techniques to extract, clean, and filter news articles based on specified search parameters. 
 
-This template contains a working robot implementation that has the basic structure where the first part produces work items from an input and the second one consumes those newly created output work items.
+The project also includes capabilities for text embedding and similarity analysis, enabling the identification of relevant news articles according to specific topics and timeframes. Finally, the cleaned and filtered data is saved in an Excel file for further use.
 
-![process.png](./docs/process.png)
+## Features
+- **Robocorp Integration:** Run workflows in Robocorp workspace. 
+- **News Search:** Automatically searches for news articles based on a text phrase across multiple online sources.
+- **HTML Content Extraction:** Retrieves and parses HTML content from the listed news URLs.
+- **Data Normalization:** Cleans and normalizes extracted data, including text, dates, and authors.
+- **Text Embedding & Similarity Calculation:** Generates embeddings for news content and calculates cosine similarity to filter relevant articles.
+- **Monetary Information Detection:** Identifies articles containing monetary information based on common currency symbols and keywords.
+- **Image Downloading:** Downloads images associated with news articles and saves them locally.
+- **Date Filtering:** Filters articles based on their publication date, allowing for time-bound searches.
+- **Data Export:** Saves the final filtered and normalized data into an Excel file.
 
-The template tries to keep the amount of functional code at a minimum so you have less to clear out and replace with your own implementation, but some functional logic is needed to have the template working and guiding the key parts.
+## Installation
 
-> We recommended checking out the article "[Using work items](https://robocorp.com/docs/development-guide/control-room/work-items)" before diving in.
+To run this tool, you'll need Python installed along with the following dependencies:
 
-## Tasks
-
-The robot is split into two tasks, meant to run as separate steps in Control Room. The first task generates (produces) data, and the second one reads (consumes) and processes that data.
-
-### The first task (the producer)
-
-- Load the example Excel file from work item
-- Split the Excel file into work items for the consumer
-
-### The second task (the consumer)
-
-> We recommended checking out the article "[Work item exception handling](https://robocorp.com/docs/development-guide/control-room/work-items#work-item-exception-handling)" before diving in.
-
-- Loop through all work items in the queue and access the payloads from the previous step
-
-## Local testing
-
-For best experience to test the work items in this example we recommend using [Robocorp Code -extensions for VS Code](https://robocorp.com/docs/developer-tools/visual-studio-code/extension-features). With the Robocorp Code extension you can simply run and [select the input work items](https://robocorp.com/docs/developer-tools/visual-studio-code/extension-features#using-work-items) to use, create inputs to simulate error cases, and so on.
-
-## Extending the template
-
-> The [producer-consumer](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) model is not limited to two steps, it can continue so that the consumer generates further work items for the next step and so on.
-
-Here's how you can add a third step, let's say a **reporter**, which will collect inputs from the previous one (the **consumer**) and generate a simple report with the previously created data. But first, see below what you need to add extra:
-
-### The `reporter` step code
-
-```python
-@task
-def reporter():
-    """Collect and combine all the consumer outputs into a single report."""
-    complete_orders = sum("complete" in item.payload["Order"] for item in workitems.inputs)
-    print(f"Complete orders: {complete_orders}")
+```bash
+pip install .
 ```
 
-And as you can see, we collect some `"Order"` info from the previously created outputs, but we don't have yet such outputs created in the previous step (the **consumer**), so let's create them:
+## Usage
 
-```python
-@task
-def consumer():
-    """Process all the produced input Work Items from the previous step."""
-    for item in workitems.inputs:
-        try:
-            ...
-            workitems.outputs.create(payload={"Order": f"{name} is complete"})
-            item.done()
-        except AssertionError as err:
-            ...
-```
+### Initialization
 
-The magic happens in this single line added right before the `item.done()` part: `workitems.outputs.create(payload={"Order": f"{name} is complete"})`. This creates a new output for every processed input with an `"Order"` field in the payload data. This is retrieved in the next step (**reporter**) through `item.payload["Order"]`.
-
-### The `reporter` task entry
-
-All good on the code side, but we need now to make this new task visible and runnable right in our [*robot.yaml*](./robot.yaml) configuration. So add this under `tasks:`:
-
-```yaml
-Reporter:
-    shell: python -m robocorp.tasks run tasks.py -t reporter
-```
-
-Now you're good to go, just run the **consumer** again (so you'll have output items created), then run the newly introduced 3rd step called **reporter**.
+The tool can be initialized using two main functions depending on the desired step in the extraction process.
 
 
-----
+### Local Execution
 
-🚀 Now, go get'em
+To execute the full process in one go, simply run the script: <pre>python -m run news_data_extractor/source/main.py </pre>
 
-Start writing Python and remember that the AI/LLM's out there are getting really good and creating Python code specifically.
+### Robocorp execution
 
-👉 Try out [Robocorp ReMark 💬](https://chat.robocorp.com)
+To execute the full process in one go, simply run in the dashboard:
 
-For more information, do not forget to check out the following:
-- [Robocorp Documentation -site](https://robocorp.com/docs)
-- [Portal for more examples](https://robocorp.com/portal)
-- Follow our main [robocorp -repository](https://github.com/robocorp/robocorp) as it is the main location where we developed the libraries and the framework.
+
+### Configuration
+- **Search Parameters:** Defined during class initialization or passed to the functions. Includes
+   - `text_phrase`:str
+   - `news_category`:str
+   - `max_months`:int.
+
+### Logging
+
+The tool generates log files (`my_log.log`) capturing detailed information about the extraction process, including warnings and errors.
+
+### Output
+
+The final output is saved as an Excel file (`results.xlsx`) in the `output` directory located at the root of the project.
+
+## Next Steps
+
+- Fix parsing errors
+- Add more options to filter data directly in websites
+- Support more websites, specially that ones with anti-bot detection
+- Break the process in more steps
+- Performance optimizations
+   - Add parallelism
+   - Isolate NLP tasks in different environments
+
+
+
+
+
+
+
+
+
