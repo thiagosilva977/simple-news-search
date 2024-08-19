@@ -346,6 +346,8 @@ class NewsDataExtractor:
 
                                 except ValueError:
                                     result = str(element.text)
+                                except KeyError:
+                                    result = str(element.text)
 
                             elif column_name == "picture_url":
                                 result = str(element['src'])
