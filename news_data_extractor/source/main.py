@@ -21,17 +21,35 @@ logging.basicConfig(level=logging.INFO,
 
 
 class NewsDataExtractor:
-    def __init__(self, search_parameters: dict = None):
+    def __init__(self, search_parameters: dict = None,
+                 extracted_data=None,
+                 normalized_data=None,
+                 filtered_news=None,
+                 source_parameters=None):
         if search_parameters is None:
-            search_parameters = {'text_phrase': "Olympic Paris", 'news_category': None, 'max_months': 2}
-        self.search_parameters = search_parameters
-        self.source_parameters = {}
+            self.search_parameters = {'text_phrase': "Olympic Paris", 'news_category': None, 'max_months': 2}
+        else:
+            self.search_parameters = search_parameters
+        if source_parameters is None:
+            self.source_parameters = {}
+        else:
+            self.source_parameters = source_parameters
+
         self.ignore_urls_with_text = ['/staff/']
-        self.extracted_data = []
+        if extracted_data is None:
+            self.extracted_data = []
+        else:
+            self.extracted_data = extracted_data
         self.current_folder = Path(__file__).resolve().parent
         self.root_folder = Path(__file__).resolve().parent.parent.parent
-        self.normalized_data = pd.DataFrame([])
-        self.filtered_news = pd.DataFrame([])
+        if normalized_data is None:
+            self.normalized_data = pd.DataFrame([])
+        else:
+            self.normalized_data = normalized_data
+        if filtered_news is None:
+            self.filtered_news = pd.DataFrame([])
+        else:
+            self.filtered_news = filtered_news
 
         try:
             self.nlp = spacy.load('en_core_web_sm')
@@ -139,6 +157,7 @@ class NewsDataExtractor:
             logging.info(f"[Request] {source} | {response_status}")
             self.source_parameters[source]['search_results'] = {'status_code': response_status,
                                                                 'html': response_html}
+            return self.source_parameters
 
     def _get_news_listing(self):
         for source in list(self.source_parameters.keys()):
