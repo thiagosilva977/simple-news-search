@@ -149,6 +149,13 @@ class NewsDataExtractor:
         print(self.source_parameters.keys())
         for source in list(self.source_parameters.keys()):
             search_url = self.source_parameters[source]['text_search_url']
+            try:
+                search_text = self.search_parameters['text_phrase']
+            except KeyError:
+                self.search_parameters['text_phrase'] = "Golden Medal Paris 2024"
+                self.search_parameters['news_category'] = "sports"
+                self.search_parameters['max_months'] = 2
+
             search_text = self.search_parameters['text_phrase']
             # TODO: Add other filtering directly in search
             # search_category = self.search_parameters['news_category']
@@ -270,6 +277,12 @@ class NewsDataExtractor:
 
         :return:
         """
+        try:
+            self.search_parameters['text_phrase']
+        except KeyError:
+            self.search_parameters['text_phrase'] = "Golden Medal Paris 2024"
+            self.search_parameters['news_category'] = "sports"
+            self.search_parameters['max_months'] = 2
         for source in list(self.source_parameters.keys()):
             self.source_parameters[source]['collected_data'] = []
             for news_article in self.source_parameters[source]['news_to_collect_data']:

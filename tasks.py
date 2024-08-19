@@ -21,7 +21,7 @@ def step_1():
         print("Received payload:", item.payload)
         user_input = item.payload
         if user_input is None or user_input == "":
-            user_input = {"text_phrase": "Olympic Paris", "news_category": "Sports", "max_months": 2}
+            user_input = {"text_phrase": "Gold Medal Paris 2024", "news_category": "Sports", "max_months": 2}
     except:
         user_input = {"text_phrase": "Olympic Paris", "news_category": "Sports", "max_months": 2}
 
