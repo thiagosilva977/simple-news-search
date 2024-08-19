@@ -1,12 +1,18 @@
-import time
-
-import requests
-from bs4 import BeautifulSoup
-import logging
-import re
 import datetime
+import logging
+import os
+import re
 from pathlib import Path
 from urllib.parse import urlparse
+
+import numpy as np
+import pandas as pd
+import requests
+import spacy
+from bs4 import BeautifulSoup
+from sentence_transformers import SentenceTransformer
+
+sbert_model = SentenceTransformer('bert-base-nli-mean-tokens')
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(module)s %(funcName)s %(message)s',
@@ -23,6 +29,13 @@ class NewsDataExtractor:
         self.ignore_urls_with_text = ['/staff/']
         self.extracted_data = []
         self.current_folder = Path(__file__).resolve().parent
+        self.normalized_data = pd.DataFrame([])
+
+        try:
+            self.nlp = spacy.load('en_core_web_sm')
+        except:
+            os.system("python -m spacy download en_core_web_sm")
+            self.nlp = spacy.load('en_core_web_sm')
 
     def _get_sources(self, only_active=False):
         sources_config = {
@@ -275,6 +288,37 @@ class NewsDataExtractor:
             if len(self.source_parameters[source]['collected_data']) != 0:
                 self.extracted_data = self.extracted_data + self.source_parameters[source]['collected_data']
 
+    def generate_text_embedding(self, text: str):
+
+        text_embedding = self.nlp(text).vector
+        return text_embedding
+
+    def nlp_cosine_similarity(self, vector_a, vector_b):
+        dot_product = np.dot(vector_a, vector_b)
+        magnitude_a = np.linalg.norm(vector_a)
+        magnitude_b = np.linalg.norm(vector_b)
+        return dot_product / (magnitude_a * magnitude_b)
+
+    def calculate_similarity_from_text(self, df: pd.DataFrame, text: str) -> pd.DataFrame:
+
+        text_embedding = self.generate_text_embedding(text)
+
+        # Calculate distances between the text embedding and each embedding in the DataFrame
+        df['similarities'] = df['embedding'].apply(lambda emb: self.nlp_cosine_similarity(text_embedding, emb).item())
+        df_sorted = df.sort_values(by='similarities', ascending=True)
+
+        return df_sorted
+
+    def filter_similarity_by_closest(self, df, max_percentage=0.1):
+        # Determine the cutoff similarity value for the top 'top_percent' of similar entries
+        max_similarity = df['similarities'].max()
+        cutoff_similarity = max_similarity * (1 - max_percentage)
+
+        # Filter the DataFrame to keep only entries within the top 'top_percent' of the maximum similarity
+        df_filtered = df[df['similarities'] >= cutoff_similarity].reset_index(drop=True)
+
+        return df_filtered
+
     def _normalize_all_data(self):
         def clean_text(text):
             """
@@ -424,7 +468,11 @@ class NewsDataExtractor:
                     monetary_info = contains_monetary_info(row['description'])
                 row['contains_monetary'] = monetary_info
                 picture_downloaded = download_image(image_url=row['picture_url'])
+                row['picture_path'] = picture_downloaded
+                row['embedding'] = self.generate_text_embedding(text=f"{row['title']} {row['full_text']}")
+                formatted_rows.append(row)
 
+        self.normalized_data = pd.DataFrame(formatted_rows)
 
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
