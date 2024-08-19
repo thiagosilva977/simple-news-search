@@ -179,7 +179,7 @@ class NewsDataExtractor:
                 self.source_parameters[source]['search_results'] = {}
             self.source_parameters[source]['search_results'] = {'status_code': response_status,
                                                                 'html': response_html}
-            return self.source_parameters
+        return self.source_parameters
 
     def get_news_listing(self):
         """
@@ -596,23 +596,25 @@ class NewsDataExtractor:
         :param date_column:
         :return:
         """
+        try:
+            # Ensure the date_column is in datetime format
+            df[date_column] = pd.to_datetime(df[date_column])
 
-        # Ensure the date_column is in datetime format
-        df[date_column] = pd.to_datetime(df[date_column])
+            # Get the current date
+            current_date = datetime.datetime.now()
 
-        # Get the current date
-        current_date = datetime.datetime.now()
+            # Calculate the start date
+            if months_back <= 1:
+                start_date = current_date.replace(day=1)
+            else:
+                # Calculate the start date for the number of months_back
+                first_day_of_current_month = current_date.replace(day=1)
+                start_date = first_day_of_current_month - pd.DateOffset(months=months_back - 1)
 
-        # Calculate the start date
-        if months_back <= 1:
-            start_date = current_date.replace(day=1)
-        else:
-            # Calculate the start date for the number of months_back
-            first_day_of_current_month = current_date.replace(day=1)
-            start_date = first_day_of_current_month - pd.DateOffset(months=months_back - 1)
-
-        # Filter the DataFrame
-        df_filtered = df[df[date_column] >= start_date]
+            # Filter the DataFrame
+            df_filtered = df[df[date_column] >= start_date]
+        except:
+            df_filtered = df.copy()
 
         return df_filtered
 
