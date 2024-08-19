@@ -52,11 +52,12 @@ class NewsDataExtractor:
 
         try:
             self.nlp = spacy.load('en_core_web_sm')
-        except:
+        except OSError:
             os.system("python -m spacy download en_core_web_sm")
             self.nlp = spacy.load('en_core_web_sm')
 
-    def _get_sources(self, only_active=False):
+    @staticmethod
+    def _get_sources(only_active=False):
         sources_config = {
             'apnews': {'text_search_url': 'https://apnews.com/search?q=', 'domain': 'https://apnews.com',
                        'enabled': True, 'captcha': False,
@@ -101,7 +102,8 @@ class NewsDataExtractor:
                               {'column_name': 'picture_url', 'type': 'img',
                                'loc': {'class': 'image native-image prime-img-class'}},
                               {'column_name': 'picture_caption', 'type': 'figcaption', 'loc': {
-                                  'class': 'flexible-link null image-with-caption-credit-link image-with-caption-credit-link'}},
+                                  'class': 'flexible-link null image-with-caption-credit-link '
+                                           'image-with-caption-credit-link'}},
                               {'column_name': 'authors', 'type': 'a',
                                'loc': {'class': 'flexible-link internal v-byline-author-name v-byline-author-name'}},
 
@@ -135,24 +137,24 @@ class NewsDataExtractor:
         else:
             return sources_config
 
-    def _search_news(self):
+    def search_news(self):
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
-        
+
         print(self.source_parameters.keys())
         for source in list(self.source_parameters.keys()):
             search_url = self.source_parameters[source]['text_search_url']
             search_text = self.search_parameters['text_phrase']
             # TODO: Add other filtering directly in search
-            search_category = self.search_parameters['news_category']
-            search_months = self.search_parameters['max_months']
+            # search_category = self.search_parameters['news_category']
+            # search_months = self.search_parameters['max_months']
             search_full_url = f"{search_url}{search_text}"
             try:
                 response = requests.get(search_full_url)
                 response_status = response.status_code
                 response_html = response.text
 
-            except:
+            except requests.RequestException:
                 response_status = 500
                 response_html = None
 
@@ -164,7 +166,7 @@ class NewsDataExtractor:
                                                                 'html': response_html}
             return self.source_parameters
 
-    def _get_news_listing(self):
+    def get_news_listing(self):
         for source in list(self.source_parameters.keys()):
             if 'search_results' not in list(self.source_parameters[source].keys()):
                 pass
@@ -185,7 +187,7 @@ class NewsDataExtractor:
                     if len(elements) != 0:
                         for element in elements:
                             http_urls = [a['href'] for a in element.find_all('a', href=True) if
-                                        a['href'].startswith('https')]
+                                         a['href'].startswith('https')]
                             if isinstance(http_urls, list):
                                 if len(http_urls) != 0:
                                     news_url_found = news_url_found + http_urls
@@ -216,9 +218,9 @@ class NewsDataExtractor:
 
                     self.source_parameters[source]['listing_results'] = valid_urls
 
-    def _get_news_html(self):
+    def get_news_html(self):
         for source in list(self.source_parameters.keys()):
-           
+
             if 'news_collect_data' not in list(self.source_parameters[source].keys()):
                 self.source_parameters[source]['news_to_collect_data'] = []
             if 'listing_results' not in list(self.source_parameters[source].keys()):
@@ -235,7 +237,7 @@ class NewsDataExtractor:
                         response_status = response.status_code
                         response_html = response.text
 
-                    except:
+                    except requests.RequestException:
                         response_status = 500
                         response_html = None
 
@@ -247,7 +249,7 @@ class NewsDataExtractor:
                         'html': response_html})
         return self.source_parameters
 
-    def _parse_each_news(self):
+    def parse_each_news(self):
         for source in list(self.source_parameters.keys()):
             self.source_parameters[source]['collected_data'] = []
             for news_article in self.source_parameters[source]['news_to_collect_data']:
@@ -268,12 +270,12 @@ class NewsDataExtractor:
                         if element is None:
                             try:
                                 element = soup.find(class_=lambda x: x and x.startswith(object_param['class']))
-                            except:
+                            except AttributeError:
                                 pass
                         if element is None:
                             try:
                                 element = soup.find(id_=lambda x: x and x.startswith(object_param['id']))
-                            except:
+                            except AttributeError:
                                 pass
 
                         if element is not None:
@@ -303,9 +305,14 @@ class NewsDataExtractor:
                                         result = str(element['datetime'])
                                         if len(result) == 0:
                                             result = str(element.text)
-                                    except:
+                                    except AttributeError:
                                         result = str(element['data-timestamp'])
-                                except:
+                                    except TypeError:
+                                        result = str(element['data-timestamp'])
+                                    except ValueError:
+                                        result = str(element['data-timestamp'])
+
+                                except ValueError:
                                     result = str(element.text)
 
                             elif column_name == "picture_url":
@@ -327,7 +334,8 @@ class NewsDataExtractor:
         text_embedding = self.nlp(text).vector
         return text_embedding
 
-    def nlp_cosine_similarity(self, vector_a, vector_b):
+    @staticmethod
+    def nlp_cosine_similarity(vector_a, vector_b):
         dot_product = np.dot(vector_a, vector_b)
         magnitude_a = np.linalg.norm(vector_a)
         magnitude_b = np.linalg.norm(vector_b)
@@ -343,7 +351,8 @@ class NewsDataExtractor:
 
         return df_sorted
 
-    def filter_similarity_by_closest(self, df, max_percentage=0.1):
+    @staticmethod
+    def filter_similarity_by_closest(df, max_percentage=0.1):
         # Determine the cutoff similarity value for the top 'top_percent' of similar entries
         max_similarity = df['similarities'].max()
         cutoff_similarity = max_similarity * (1 - max_percentage)
@@ -353,7 +362,7 @@ class NewsDataExtractor:
 
         return df_filtered
 
-    def _normalize_all_data(self):
+    def normalize_all_data(self):
         def clean_text(text):
             """
             Normalize text by removing extra spaces, HTML tags, and unwanted characters.
@@ -408,8 +417,8 @@ class NewsDataExtractor:
                     cleaned_str = re.sub(r"(Published|Modified)\s*", "", date_str)
                     return parse_date(cleaned_str)
 
-            except Exception as e:
-                return None  # Handle errors gracefully
+            except ValueError:
+                return None
 
         def contains_monetary_info(text):
 
@@ -510,7 +519,8 @@ class NewsDataExtractor:
 
         self.normalized_data = pd.DataFrame(formatted_rows)
 
-    def filter_by_date(self, df: pd.DataFrame, months_back: int, date_column: str = 'date') -> pd.DataFrame:
+    @staticmethod
+    def filter_by_date(df: pd.DataFrame, months_back: int, date_column: str = 'date') -> pd.DataFrame:
 
         # Ensure the date_column is in datetime format
         df[date_column] = pd.to_datetime(df[date_column])
@@ -558,43 +568,43 @@ class NewsDataExtractor:
         else:
             return None
 
-
     def extraction_manager(self):
         self.source_parameters = self._get_sources(only_active=True)
         logging.info(f'Obtained {len(list(self.source_parameters.keys()))} sources to process.')
-        self._search_news()
-        self._get_news_listing()
-        self._get_news_html()
-        self._parse_each_news()
-        self._normalize_all_data()
+        self.search_news()
+        self.get_news_listing()
+        self.get_news_html()
+        self.parse_each_news()
+        self.normalize_all_data()
         print(self.normalized_data)
         self.filter_data()
         print(self.filtered_news)
         self.save_final_data()
         # Test commit
 
+
 def initialize_step_1(user_input):
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input)
     print('initializing function 1')
-    bot_class._search_news()
+    bot_class.search_news()
     print('initializing function 2')
-    bot_class._get_news_listing()
-    updated_parameters = bot_class._get_news_html()
+    bot_class.get_news_listing()
+    updated_parameters = bot_class.get_news_html()
     return updated_parameters
 
 
-def initialize_step_2(user_input,source_parameters):
+def initialize_step_2(user_input, source_parameters):
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input,
                                   source_parameters=source_parameters)
-    bot_class._parse_each_news()
-    bot_class._normalize_all_data()
+    bot_class.parse_each_news()
+    bot_class.normalize_all_data()
     bot_class.filter_data()
     final_df = bot_class.save_final_data()
     return final_df
 
 
 if __name__ == '__main__':
-    bot_class = NewsDataExtractor()
-    bot_class.extraction_manager()
+    bot_class_ = NewsDataExtractor()
+    bot_class_.extraction_manager()

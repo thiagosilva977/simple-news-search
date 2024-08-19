@@ -25,7 +25,7 @@ EXTRAS_REQUIRE = {
 
 setup(
     name="news-data-extractor",
-    version="0.0.1",
+    version="0.0.2",
     author="Thiago Silva",
     author_email="",
     description="Extract news in different sources.",
