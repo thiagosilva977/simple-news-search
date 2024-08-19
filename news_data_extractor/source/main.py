@@ -535,6 +535,7 @@ class NewsDataExtractor:
         self.filter_data()
         print(self.filtered_news)
         self.save_final_data()
+        # Test commit
 
 
 if __name__ == '__main__':
