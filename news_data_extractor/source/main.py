@@ -661,6 +661,7 @@ class NewsDataExtractor:
         """
         if not self.filtered_news.empty:
             self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
+            self.filtered_news['date'] = self.filtered_news['date'].astype(str)
             self.filtered_news.to_excel(f"output/results.xlsx")
             return self.filtered_news, self.processed_raw_data
         else:

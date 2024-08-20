@@ -36,8 +36,6 @@ def step_2():
                                                  extracted_data=step_1_results)
     print(df_created)
     if df_created is not None and not df_created.empty:
-        df_created['date'] = df_created['date'].astype(str)
-        df_created.to_excel('output/result.xlsx')
         print(df_created)
         json_object = json.dumps({"results":str(processed_raw_data)})
         with open('output/results.json', 'w', encoding='utf-8') as outfile:
@@ -64,8 +62,6 @@ def step_1_2():
                                                  extracted_data=step_1_results)
     print(df_created)
     if df_created is not None and not df_created.empty:
-        df_created['date'] = df_created['date'].astype(str)
-        df_created.to_excel('output/result.xlsx')
         print(df_created)
         json_object = json.dumps({"results":str(processed_raw_data)})
         with open('output/results.json', 'w', encoding='utf-8') as outfile:
