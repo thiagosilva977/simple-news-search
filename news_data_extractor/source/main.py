@@ -167,6 +167,7 @@ class NewsDataExtractor:
                 response = requests.get(search_full_url)
                 response_status = response.status_code
                 response_html = response.text
+                response_html = response_html.encode('utf-8')
 
             except requests.RequestException:
                 logging.warning(f"Request 500")
@@ -253,12 +254,15 @@ class NewsDataExtractor:
             listing_results = self.source_parameters[source]['listing_results']
 
             if len(listing_results) != 0:
+                # REMOVE THIS
+                listing_results = listing_results[:2]
                 for listing_url in listing_results:
                     try:
                         print(listing_url)
                         response = requests.get(listing_url)
                         response_status = response.status_code
                         response_html = response.text
+                        response_html = response_html.encode('utf-8')
 
                     except requests.RequestException:
                         response_status = 500
@@ -269,7 +273,7 @@ class NewsDataExtractor:
                     self.source_parameters[source]['news_to_collect_data'].append({
                         'url': listing_url,
                         'status_code': response_status,
-                        'html': response_html})
+                        'html': str(response_html)})
         return self.source_parameters
 
     def parse_each_news(self):
@@ -481,7 +485,7 @@ class NewsDataExtractor:
                     cleaned_str = re.sub(r"(Published|Modified)\s*", "", date_str)
                     return parse_date(cleaned_str)
 
-            except ValueError:
+            except:
                 logging.warning('Failed to parse Date')
                 return None
 
@@ -588,6 +592,7 @@ class NewsDataExtractor:
                 pass
         self.processed_raw_data = formatted_rows
         self.normalized_data = pd.DataFrame(formatted_rows)
+        print(self.normalized_data)
 
     @staticmethod
     def filter_by_date(df: pd.DataFrame, months_back: int, date_column: str = 'date') -> pd.DataFrame:
@@ -631,19 +636,21 @@ class NewsDataExtractor:
         if self.search_parameters['news_category'] is not None and self.search_parameters['news_category'] != "":
             df = self.calculate_similarity_from_text(df=self.normalized_data,
                                                      text=self.search_parameters['news_category'])
-            df = self.filter_similarity_by_closest(df=df, max_percentage=0.3)
+            df = self.filter_similarity_by_closest(df=df, max_percentage=0.6)
 
-            df = self.calculate_similarity_from_text(df=df,
-                                                     text=self.search_parameters['text_phrase'])
-            df = self.filter_similarity_by_closest(df=df)
-        else:
-            df = self.calculate_similarity_from_text(df=self.normalized_data,
-                                                     text=self.search_parameters['text_phrase'])
-            df = self.filter_similarity_by_closest(df=df)
+            # df = self.calculate_similarity_from_text(df=df,
+            #                                         text=self.search_parameters['text_phrase'])
+            # df = self.filter_similarity_by_closest(df=df)
+        # I removed the most relevant results to show more results on output xlsx.
+        # else:
+        #    df = self.calculate_similarity_from_text(df=self.normalized_data,
+        #                                             text=self.search_parameters['text_phrase'])
+        #    df = self.filter_similarity_by_closest(df=df)
 
         if self.search_parameters['max_months'] is not None:
             df = self.filter_by_date(df=df, months_back=int(self.search_parameters['max_months']))
         self.filtered_news = df.copy()
+        print(self.filtered_news)
 
     def save_final_data(self):
         """
@@ -653,7 +660,7 @@ class NewsDataExtractor:
         """
         if not self.filtered_news.empty:
             self.filtered_news = self.filtered_news.drop(columns=['embedding', 'similarities'])
-            self.filtered_news.to_excel(f"{self.root_folder}/output/results.xlsx")
+            self.filtered_news.to_excel(f"output/results.xlsx")
             return self.filtered_news, self.processed_raw_data
         else:
             return None, self.processed_raw_data

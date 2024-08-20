@@ -1,50 +1,18 @@
-2024-08-19 20:12:11,516 WARNING _file _resolve_input_path Work items input path not defined, to simulate different input values set the
-environment variable `RC_WORKITEM_INPUT_PATH`.
-
-Generated input path: C:\Users\thiag\vscode_projects\news-crawler\simple-news-search-engine\output\work-items-in\workitems.json
-
-2024-08-19 20:12:11,519 INFO main initialize_step_1 Initializing Class
-2024-08-19 20:12:11,955 INFO main initialize_step_1 initializing function 1 - Search News
-2024-08-19 20:12:11,956 INFO main search_news Obtained 4 sources to process.
-2024-08-19 20:12:14,460 INFO main search_news [Request] apnews | 200
-2024-08-19 20:12:14,464 INFO main initialize_step_1 initializing function 2 - Get URLs from Listings
-2024-08-19 20:12:14,960 INFO main get_news_listing [Listings] apnews Found ['https://apnews.com/article/olympics-2024-fencing-10c93fe0bbfcde59164d2372d7501e1c', 'https://apnews.com/olympics-medal-tracker', 'https://apnews.com/article/paris-olympics-medal-count-us-china-967b8b73cd08c69f83ec14d2cc38961c', 'https://apnews.com/article/2024-olympics-sam-watson-sport-climbing-554ed11f8fc5f6c005d420eeb92b2bfd', 'https://apnews.com/article/olympics-2024-gymnastics-men-6fdab7aeb5c6d8ed3e331fdf71131a92', 'https://apnews.com/video/boxing-2024-paris-olympic-games-taiwan-taipei-jk-rowling-2fbb2fb749d040339b55a5767d9cdd4e', 'https://apnews.com/article/2024-olympics-medals-united-states-china-e9f013a206e0de69c41686ee122f425a', 'https://apnews.com/article/olympics-2024-boxing-imane-khelif-3713dc197cf0d3307fb1c5f13327141d', 'https://apnews.com/article/2024-olympics-ukraine-boxing-f1938441a0f1ce80ca2308e05f8a9133', 'https://apnews.com/article/2024-olympics-belarus-trampoline-medal-4f40b08a654301240b16a18d5bb0102e', 'https://apnews.com/article/2024-olympics-beach-volleyball-men-0da8308fd2ff8c1f11549d86bd27d1d4', 'https://apnews.com/live/updates-democratic-national-convention-harris-walz', 'https://apnews.com/hub/russia-ukraine', 'https://apnews.com/article/olympics-2024-paris-games-tarzan-53767dd3d09e67a0e2fb017493732454', 'https://apnews.com/article/2024-olympics-paris-games-table-tennis-china-b7aa4ca4cfea3c758402f90da4accaf7', 'https://apnews.com/article/2024-olympics-fencing-mens-team-foil-cb8fc1097df508bd504f2960fd7d92c0', 'https://apnews.com/article/olympics-2024-paris-medals-0cb7c1f1c2306eb03429506782b6b29f', 'https://apnews.com/article/olympics-2024-boxing-harrington-14968a028a6d24cc7936fc2e0018d1ee', 'https://apnews.com/article/italy-sicily-storm-tourists-missing-060bf26f426708c8eb59e81d88787d11', 'https://apnews.com/article/2024-olympics-sailing-medals-marseille-weather-heat-wind-dbaa7cbe5eb6c4b7b65de9fc617ac38f', 'https://apnews.com/article/2024-olympics-9799bc9abff5bff88fdaf6d07d3c0965', 'https://apnews.com/article/olympics-2024-ledecky-argentina-gauff-d2ed966694bbef82ca2c3d3d4a7c8a4a', 'https://apnews.com/article/2024-olympics-basketball-us-australia-5d8cf605882a080da9fb0e1615539fd7', 'https://apnews.com/video/2024-paris-olympic-games-paris-37adf5e9dfae4a809150114f8349065b', 'https://apnews.com/article/olympics-2024-fencing-1d2e636fded6b99b5aa3831461bfdb28', 'https://apnews.com/article/2024-olympics-paris-table-tennis-china-gold-e52af7f0c42c6a3923b3290e8842ba27', 'https://apnews.com/article/2024-olympics-france-usa-basketball-gold-e5f2d19c0893e8f00bcae13fe1e95f24', 'https://apnews.com/article/sudan-cholera-outbreak-conflict-046f27a435816dd0838eade09dbec4ab', 'https://apnews.com/article/2024-olympics-basketball-france-germany-ee7ae109109afc694e32e0e8a00902e8', 'https://apnews.com/article/2024-olympics-august-10-d123fa4923bf878d504b59256777e453', 'https://apnews.com/article/perdue-chicken-nugget-recall-metal-wire-cbca0d8706fc3fe54e18b0d46afed987', 'https://apnews.com/article/2024-olympics-weightlifting-b5c409e0cdd231e3dfa9908561e80fb6', 'https://apnews.com/article/olympics-2024-equestrian-eventing-final-team-jumping-c38bfb62bc96bd84f53d3d360a456acd', 'https://apnews.com/article/2024-olympics-jamaica-discus-429eb8f2836897cab0664b2c55869ade', 'https://apnews.com/article/olympics-2024-shooting-vincent-hancock-291fb36702dce93da73e09474932d794'] news.
-2024-08-19 20:12:14,991 INFO main initialize_step_1 initializing function 3 - Get HTML from each news
-2024-08-19 20:12:15,257 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:15,647 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:15,964 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:16,244 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:16,627 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:16,938 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:17,023 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:17,317 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:17,535 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:17,745 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:18,785 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:18,909 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:18,988 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:19,661 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:20,522 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:20,763 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:20,999 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:21,207 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:21,288 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:21,563 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:21,786 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:22,062 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:22,902 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:23,248 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:23,525 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:23,759 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:23,997 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:24,130 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:24,349 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:24,584 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:24,678 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:24,838 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:25,764 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:26,824 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:27,056 INFO main get_news_html [Request NEWS] apnews | 200
-2024-08-19 20:12:28,048 INFO main initialize_step_2 initializing function 4 - Extract raw data
-2024-08-19 20:12:44,327 INFO main initialize_step_2 initializing function 5 - Normalize Data
-2024-08-19 20:12:45,331 INFO _file release_input Releasing item '0' with FAILED state and exception: {'type': 'APPLICATION', 'code': None, 'message': "redefinition of group name 'b' as group 4; was group 1 at position 132"}
+2024-08-19 23:46:40,833 INFO main initialize_step_1 Initializing Class
+2024-08-19 23:46:41,222 INFO main initialize_step_1 initializing function 1 - Search News
+2024-08-19 23:46:41,223 INFO main search_news Obtained 4 sources to process.
+2024-08-19 23:46:41,375 INFO main search_news [Request] apnews | 200
+2024-08-19 23:46:42,508 INFO main search_news [Request] aljazeera | 200
+2024-08-19 23:46:43,245 INFO main search_news [Request] gothamist | 200
+2024-08-19 23:46:44,416 INFO main search_news [Request] yahoo | 200
+2024-08-19 23:46:44,423 INFO main initialize_step_1 initializing function 2 - Get URLs from Listings
+2024-08-19 23:46:44,949 INFO main get_news_listing [Listings] apnews Found ['https://apnews.com/article/olympics-2024-sport-climbing-6ab9f0ee3da016663084444099ab83bd', 'https://apnews.com/article/2024-olympics-ukraine-boxing-f1938441a0f1ce80ca2308e05f8a9133', 'https://apnews.com/article/olympics-2024-medal-winners-today-b9522fd1223ae6599569ffe1ee48cc62', 'https://apnews.com/article/2024-olympics-belarus-trampoline-medal-4f40b08a654301240b16a18d5bb0102e', 'https://apnews.com/article/2024-olympics-fencing-mens-team-foil-cb8fc1097df508bd504f2960fd7d92c0', 'https://apnews.com/article/paris-olympics-medal-count-us-china-967b8b73cd08c69f83ec14d2cc38961c', 'https://apnews.com/article/2024-olympics-sailing-medals-marseille-weather-heat-wind-dbaa7cbe5eb6c4b7b65de9fc617ac38f', 'https://apnews.com/hub/russia-ukraine', 'https://apnews.com/article/italy-sicily-storm-tourists-missing-060bf26f426708c8eb59e81d88787d11', 'https://apnews.com/article/2024-olympics-paris-roundup-day-8-4e74afa8e2bcef12328fbd4419b5bd39', 'https://apnews.com/article/olympics-2024-ledecky-argentina-gauff-d2ed966694bbef82ca2c3d3d4a7c8a4a', 'https://apnews.com/article/2024-olympics-paris-track-cycling-715e262f04005bc38280c9f910186dff', 'https://apnews.com/article/paralympics-refugee-team-3a6fed93b76e3f744e07b18c9b29a8a1', 'https://apnews.com/olympics-medal-tracker', 'https://apnews.com/live/updates-democratic-national-convention-harris-walz', 'https://apnews.com/article/2024-olympics-france-usa-basketball-gold-e5f2d19c0893e8f00bcae13fe1e95f24', 'https://apnews.com/article/olympics-2024-paris-ukraine-russia-war-6b597cdb5fae3edd7b19e77805ce81ea', 'https://apnews.com/article/paris-olympics-new-zealand-medal-count-bc344d20a9845a838918e1f52409beaa', 'https://apnews.com/article/2024-olympics-3x3-basketball-15c076308063d967750d4817f8613324', 'https://apnews.com/video/boxing-2024-paris-olympic-games-taiwan-taipei-jk-rowling-2fbb2fb749d040339b55a5767d9cdd4e', 'https://apnews.com/article/2024-paris-olympics-beijing-skating-medals-623dcc2b0c9093f1daf60ff24af92ee0', 'https://apnews.com/article/sudan-cholera-outbreak-conflict-046f27a435816dd0838eade09dbec4ab', 'https://apnews.com/article/olympics-2024-tennis-women-doubles-ain-023056f7562571deefae886eae6400cd', 'https://apnews.com/article/perdue-chicken-nugget-recall-metal-wire-cbca0d8706fc3fe54e18b0d46afed987', 'https://apnews.com/article/2024-olympics-paris-gymnastics-jordan-chiles-jade-carey-daa0fee2c1c1fb1fbc2cde698d9b48be', 'https://apnews.com/article/2024-olympics-lithuania-viktorija-senkute-epilepsy-3f7d1c6909fa5d3d21ebf50e5ef91068', 'https://apnews.com/video/2024-paris-olympic-games-paris-37adf5e9dfae4a809150114f8349065b', 'https://apnews.com/article/2024-olympics-simone-biles-53fdf2b99a088a4281fa8852e35cbb61', 'https://apnews.com/article/olympics-2024-fencing-1d2e636fded6b99b5aa3831461bfdb28', 'https://apnews.com/article/olympics-2024-tennis-iga-swiatek-bronze-e17f689d77cfe034733adce4b16ea2c6', 'https://apnews.com/article/2024-olympics-paris-table-tennis-china-gold-e52af7f0c42c6a3923b3290e8842ba27', 'https://apnews.com/article/olympics-2024-shooting-sagen-maddalena-93e1d5eb460457232b7c2727783f948d', 'https://apnews.com/article/olympics-2024-boxing-lin-khelif-28d3e1a46ed8fe5c1aa6cd612e2561ca', 'https://apnews.com/article/2024-olympics-sunisa-lee-gymnastics-d2c7f149182f33833bbbd40d6c6e52dc', 'https://apnews.com/article/2024-olympics-august-10-d123fa4923bf878d504b59256777e453'] news.
+2024-08-19 23:46:45,018 INFO main get_news_listing [Listings] aljazeera Found [] news.
+2024-08-19 23:46:45,056 INFO main get_news_listing [Listings] gothamist Found [] news.
+2024-08-19 23:46:45,113 INFO main get_news_listing [Listings] yahoo Found ['https://www.si.com/nba/clippers/news/steve-kerr-expected-to-be-replaced-by-nba-champion-coach-for-team-usa-01j5kf11e4rw', 'https://olympics.com/en/news/sydney-mclaughlin-levrone-world-record-gold-medal-paris-2024-olympics-interview', 'https://www.wisn.com/article/video-steve-kerr-speech-dnc/61919436', 'https://www.si.com/nba/warriors/news/anthon-edwards-reveals-steph-curry-kevin-durant-were-drug-tested-after-olympics-01j5nxrbw698', 'https://clutchpoints.com/warriors-news-stephen-curry-olympic-celly-paris', 'https://sports.yahoo.com/steve-kerr-channels-stephen-curry-at-dnc-calls-for-voters-to-tell-donald-trump-night-night-on-election-day-024621584.html?fr=sycsrp_catchall', 'https://www.yahoo.com/news/dnc-2024-day-1-live-142300693.html?fr=sycsrp_catchall', 'https://www.yahoo.com/news/coach-steve-kerr-endorses-kamala-022348394.html?fr=sycsrp_catchall', 'https://www.yahoo.com/news/steve-kerr-channels-steph-curry-015930305.html?fr=sycsrp_catchall', 'https://www.si.com/fannation/nba/fastbreak/espn-star-makes-blunt-statement-about-steve-kerr-stephen-a-smith'] news.
+2024-08-19 23:46:45,119 INFO main initialize_step_1 initializing function 3 - Get HTML from each news
+2024-08-19 23:46:45,271 INFO main get_news_html [Request NEWS] apnews | 200
+2024-08-19 23:46:45,352 INFO main get_news_html [Request NEWS] apnews | 200
+2024-08-19 23:46:46,445 INFO main get_news_html [Request NEWS] yahoo | 200
+2024-08-19 23:46:47,186 INFO main get_news_html [Request NEWS] yahoo | 200
+2024-08-19 23:46:47,455 INFO _file release_input Releasing item '0' with FAILED state and exception: {'type': 'APPLICATION', 'code': None, 'message': 'Object of type bytes is not JSON serializable'}
