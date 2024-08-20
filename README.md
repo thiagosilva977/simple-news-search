@@ -47,6 +47,20 @@ To execute the full process in one go, simply run the script: <pre>python -m run
 
 To execute the full process in one go, simply run in the dashboard:
 
+#### Start the process
+![image](https://github.com/user-attachments/assets/9f52b5ee-db00-497c-83e2-5fb801c15274)
+
+*Example of custom input data*
+
+#### Advanced Settings
+You can Self-Host a worker with your own machine, to have fast processing while test.
+
+![image](https://github.com/user-attachments/assets/65417b95-7155-41a3-9d39-4a893589ce06)
+
+*Self host with your own machine*
+
+See the [documentation here](https://robocorp.com/docs/courses/beginners-course-python/12-running-in-robocorp-cloud)
+
 
 ### Configuration
 - **Search Parameters:** Defined during class initialization or passed to the functions. Includes
@@ -65,9 +79,16 @@ The final output is saved as an Excel file (`results.xlsx`) in the `output` dire
 ## Next Steps
 
 - Fix parsing errors
+  - Need more testing and create a good dataset to see all the possibilities of data parsing.
+  - It's possible to use LLMs to create synthetic tests (text_phrase)
 - Add more options to filter data directly in websites
+  - I skipped this part but it is easy to implement 
 - Support more websites, specially that ones with anti-bot detection
+  - We can use anticaptcha or imagetyperz to solve captchas.
+  - More complex captchas need more time to develop, but it is not impossible.
+  - Rotational proxies, managing better cookies, sometimes is enouth to some websites.
 - Break the process in more steps
+  - Better use of robocorp workitem
 - Performance optimizations
    - Add parallelism
    - Isolate NLP tasks in different environments
