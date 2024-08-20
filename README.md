@@ -6,6 +6,13 @@ It uses a combination of web scraping (via BeautifulSoup), natural language proc
 
 The project also includes capabilities for text embedding and similarity analysis, enabling the identification of relevant news articles according to specific topics and timeframes. Finally, the cleaned and filtered data is saved in an Excel file for further use.
 
+![image](https://github.com/user-attachments/assets/a5a31c2d-2109-49b1-93dd-801c4eb0bcf7)
+*Robocorp dashboard to initialize automation process*
+
+![image](https://github.com/user-attachments/assets/87345b6d-e9cc-48b8-80c8-8d9de85e66db)
+*System Design*
+
+
 ## Features
 - **Robocorp Integration:** Run workflows in Robocorp workspace. 
 - **News Search:** Automatically searches for news articles based on a text phrase across multiple online sources.
