@@ -1,6 +1,6 @@
 # simple-news-search-engine
 ## Overview
-The simple-news-search-engine project is a comprehensive tool designed to automate the process of collecting, parsing, and analyzing news data from various online sources. 
+The simple-news-search-engine project is a tool designed to automate the process of collecting, parsing, and analyzing news data from various online sources. 
 
 It uses a combination of web scraping (via BeautifulSoup), natural language processing (with SpaCy and SentenceTransformers), and machine learning techniques to extract, clean, and filter news articles based on specified search parameters. 
 
