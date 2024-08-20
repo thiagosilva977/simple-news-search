@@ -6,11 +6,14 @@ It uses a combination of web scraping (via BeautifulSoup), natural language proc
 
 The project also includes capabilities for text embedding and similarity analysis, enabling the identification of relevant news articles according to specific topics and timeframes. Finally, the cleaned and filtered data is saved in an Excel file for further use.
 
+- [Ideas and development draws](https://link.excalidraw.com/readonly/meFV9HK2aa13ySsz7IYg?darkMode=true)
+  
 ![image](https://github.com/user-attachments/assets/a5a31c2d-2109-49b1-93dd-801c4eb0bcf7)
 *Robocorp dashboard to initialize automation process*
 
 ![image](https://github.com/user-attachments/assets/87345b6d-e9cc-48b8-80c8-8d9de85e66db)
 *System Design*
+
 
 
 ## Features
@@ -92,6 +95,10 @@ The final output is saved as an Excel file (`results.xlsx`) in the `output` dire
 - Performance optimizations
    - Add parallelism
    - Isolate NLP tasks in different environments
+
+## Time tracker
+
+![image](https://github.com/user-attachments/assets/cb3186f4-e153-4064-9224-026c631187d9)
 
 
 
