@@ -80,7 +80,7 @@ The tool generates log files (`my_log.log`) capturing detailed information about
 The final output is saved as an Excel file (`results.xlsx`) in the `output` directory located at the root of the project.
 
 ## Next Steps
-
+- I'm suspect to say that I'll implement [scraping-orbit](https://pypi.org/project/scraping-orbit/) in a near future.
 - Fix parsing errors
   - Need more testing and create a good dataset to see all the possibilities of data parsing.
   - It's possible to use LLMs to create synthetic tests (text_phrase)
