@@ -366,7 +366,8 @@ class NewsDataExtractor:
             print(self.source_parameters[source]['collected_data'])
             if len(self.source_parameters[source]['collected_data']) != 0:
                 self.extracted_data = self.extracted_data + self.source_parameters[source]['collected_data']
-
+        return self.extracted_data
+    
     def generate_text_embedding(self, text: str):
         """
         Function responsible for creating embeddings from text.
@@ -698,11 +699,13 @@ def initialize_step_1(user_input):
     logging.info('initializing function 2 - Get URLs from Listings')
     bot_class.get_news_listing()
     logging.info('initializing function 3 - Get HTML from each news')
-    updated_parameters = bot_class.get_news_html()
-    return updated_parameters
+    bot_class.get_news_html()
+    logging.info('initializing function 4 - Extract raw data')
+    collected_data = bot_class.parse_each_news()
+    return collected_data
 
 
-def initialize_step_2(user_input, source_parameters):
+def initialize_step_2(user_input, extracted_data):
     """
     Function that just clean the data collected in step 1.
 
@@ -712,9 +715,8 @@ def initialize_step_2(user_input, source_parameters):
     """
     print('initializing class')
     bot_class = NewsDataExtractor(search_parameters=user_input,
-                                  source_parameters=source_parameters)
-    logging.info('initializing function 4 - Extract raw data')
-    bot_class.parse_each_news()
+                                  extracted_data=extracted_data)
+    
     logging.info('initializing function 5 - Normalize Data')
     bot_class.normalize_all_data()
     logging.info('initializing function 6 - Filter Data')
